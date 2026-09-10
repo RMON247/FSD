@@ -3,7 +3,16 @@ import { useInterval } from '../hooks/useInterval.js'
 
 const RealtimeContext = createContext(null)
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:4000'
+function getWsUrl() {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/^http/, 'ws')
+  }
+  return 'ws://localhost:4000'
+}
+
+const WS_URL = getWsUrl()
+
 
 export function RealtimeProvider({ children }) {
   const [connected, setConnected] = useState(false)
