@@ -14,20 +14,39 @@ import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
 
-const allowedOrigins = process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== '*'
-  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-  : '*'
-
-app.use(helmet())
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true)
+
+      if (!process.env.CORS_ORIGIN || process.env.CORS_ORIGIN === '*') {
+        return callback(null, origin)
+      }
+
+      const origins = process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+      if (origins.includes(origin) || origins.includes('*')) {
+        return callback(null, origin)
+      }
+
+      try {
+        const hostname = new URL(origin).hostname
+        if (hostname.endsWith('.vercel.app') || hostname === 'localhost' || hostname === '127.0.0.1') {
+          return callback(null, origin)
+        }
+      } catch {
+        // ignore invalid URL
+      }
+
+      callback(null, false)
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
   })
 )
+app.use(helmet({ crossOriginResourcePolicy: false }))
 app.use(express.json({ limit: '100kb' }))
+
 
 
 // Rate-limit all API routes to blunt brute-force / abuse
