@@ -5,6 +5,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import { WebSocketServer } from 'ws'
+import mongoose from 'mongoose'
 
 import { connectDB } from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
@@ -24,7 +25,23 @@ app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders:
 // Stricter limiter on auth endpoints specifically (login/register brute force)
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }))
 
-app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }))
+// Root & Health endpoints
+app.get('/', (req, res) => {
+  res.json({
+    message: 'StockYard Inventory REST & WebSocket API',
+    status: 'online',
+    dbConnected: mongoose.connection.readyState === 1,
+    health: '/health'
+  })
+})
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    uptime: process.uptime(),
+    dbConnected: mongoose.connection.readyState === 1
+  })
+})
 
 // ---- REST API routes (Experiment 4) ----
 app.use('/api/auth', authRoutes)
@@ -48,7 +65,6 @@ app.locals.broadcast = broadcast
 wss.on('connection', (socket) => {
   socket.send(JSON.stringify({ type: 'connection:ack', payload: { message: 'Connected to StockYard live feed' } }))
   socket.on('message', (raw) => {
-    // Echo pings back — clients can use this to measure latency
     try {
       const msg = JSON.parse(raw.toString())
       if (msg.type === 'ping') socket.send(JSON.stringify({ type: 'pong', payload: { at: Date.now() } }))
@@ -59,22 +75,24 @@ wss.on('connection', (socket) => {
 })
 
 const PORT = process.env.PORT || 4000
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.DATABASE_URL
 
 async function start() {
   try {
-    if (process.env.MONGODB_URI) {
-      await connectDB(process.env.MONGODB_URI)
+    if (mongoUri) {
+      await connectDB(mongoUri)
     } else {
-      console.warn('[startup] MONGODB_URI not set — API will start but DB routes will fail until it is configured.')
+      console.warn('[startup] MONGODB_URI/MONGO_URI environment variable is not set. API is running but DB routes will fail.')
     }
   } catch (err) {
-    console.error('[startup] Failed to connect to MongoDB:', err.message)
-    console.warn('[startup] Continuing to start the HTTP/WebSocket server anyway.')
+    console.error('[startup] Failed to connect to MongoDB Atlas:', err.message)
+    console.warn('[startup] Server is running, but database operations will fail until MongoDB connection is established.')
   }
 
   server.listen(PORT, () => {
-    console.log(`[startup] StockYard API + WebSocket server listening on http://localhost:${PORT}`)
+    console.log(`[startup] StockYard API + WebSocket server listening on port ${PORT}`)
   })
 }
 
 start()
+
