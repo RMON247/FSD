@@ -14,10 +14,21 @@ import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
 
-// ---- Security & parsing middleware (Experiment 5) ----
+const allowedOrigins = process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== '*'
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : '*'
+
 app.use(helmet())
-app.use(cors({ origin: (process.env.CORS_ORIGIN || '*').split(',') }))
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+)
 app.use(express.json({ limit: '100kb' }))
+
 
 // Rate-limit all API routes to blunt brute-force / abuse
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }))

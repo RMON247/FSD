@@ -83,9 +83,13 @@ export function DataProvider({ children }) {
   }, [])
 
   const addProduct = useCallback(async (data) => {
+    const generatedSku = data.sku && data.sku.trim()
+      ? data.sku.trim()
+      : `SKU-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 1000)}`
+
     const payload = {
-      sku: data.sku || nextId('PRD', products),
-      name: data.name,
+      sku: generatedSku,
+      name: data.name.trim(),
       category: data.category,
       price: Number(data.price) || 0,
       unit: data.unit || 'each',
@@ -93,6 +97,8 @@ export function DataProvider({ children }) {
       minStock: Number(data.minStock) || 0,
       storageId: data.storageId || 'WH-01'
     }
+
+    console.log('[DataContext] Sending POST request to backend API:', `${API_BASE}/api/products`, payload)
 
     try {
       const res = await fetch(`${API_BASE}/api/products`, {
@@ -103,6 +109,7 @@ export function DataProvider({ children }) {
 
       if (res.ok) {
         const result = await res.json()
+        console.log('[DataContext] Successfully saved product to MongoDB Atlas:', result)
         const newProduct = formatProduct(result.product || result)
         setProducts((prev) => [newProduct, ...prev])
         logTransaction({
@@ -114,13 +121,16 @@ export function DataProvider({ children }) {
           reason: 'New Product Added (Atlas Synced)',
           storageId: newProduct.storageId
         })
-        return
+        return newProduct
+      } else {
+        const errorData = await res.json().catch(() => ({ message: res.statusText }))
+        console.error('[DataContext] Backend API rejected product save:', res.status, errorData)
       }
-    } catch {
-      // Fallback local update if network fails
+    } catch (err) {
+      console.error('[DataContext] Network error connecting to backend API:', err.message)
     }
 
-    // Local fallback
+    // Local fallback if API fails
     const id = nextId('PRD', products)
     const product = formatProduct({ ...payload, id })
     setProducts((prev) => [product, ...prev])
@@ -130,10 +140,11 @@ export function DataProvider({ children }) {
       productName: product.name,
       sku: product.sku,
       quantity: product.quantity,
-      reason: 'New Product Added',
+      reason: 'New Product Added (Local)',
       storageId: product.storageId
     })
   }, [products, logTransaction])
+
 
   const updateProduct = useCallback(async (id, data) => {
     try {
