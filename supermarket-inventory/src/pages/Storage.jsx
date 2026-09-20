@@ -50,24 +50,14 @@ export default function Storage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative w-full sm:w-72">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search storage locations…"
-            className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400"
-          />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search storage locations…" className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
         </div>
         <Button icon={Plus} onClick={() => { setEditingStorage(null); setFormOpen(true) }}>Add Storage Location</Button>
       </div>
 
       {filtered.length === 0 ? (
         <Card>
-          <EmptyState
-            icon={Warehouse}
-            title="No storage locations found"
-            message={search ? `No results for "${search}".` : 'Add your first warehouse storage area to get started.'}
-            action={!search && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Storage Location</Button>}
-          />
+          <EmptyState icon={Warehouse} title="No storage locations found" message={search ? `No results for "${search}".` : 'Add your first warehouse storage area to get started.'} action={!search && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Storage Location</Button>} />
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -91,9 +81,7 @@ export default function Storage() {
                   </div>
                   <Badge>{s.status}</Badge>
                 </div>
-
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{s.location} &middot; {productCount} product{productCount !== 1 ? 's' : ''} &middot; {s.type}</p>
-
                 <div className="mt-auto">
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <span className="text-slate-500 dark:text-slate-400">Usage</span>
@@ -103,7 +91,6 @@ export default function Storage() {
                     <div className={`h-full rounded-full ${barColor}`} style={{ width: `${usagePct}%` }} />
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1.5">{available.toLocaleString()} units available</p>
-
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-ink-700">
                     <Button size="sm" variant="secondary" icon={Eye} className="flex-1" onClick={() => setViewingStorage(s)}>View</Button>
                     <Button size="sm" variant="secondary" icon={Pencil} onClick={() => { setEditingStorage(s); setFormOpen(true) }} />
@@ -116,29 +103,9 @@ export default function Storage() {
         </div>
       )}
 
-      <StorageFormModal
-        open={formOpen}
-        onClose={() => { setFormOpen(false); setEditingStorage(null) }}
-        onSubmit={handleSubmit}
-        initialData={editingStorage}
-      />
-
-      <StorageViewModal
-        open={!!viewingStorage}
-        onClose={() => setViewingStorage(null)}
-        storage={viewingStorage}
-        productsInStorage={viewingStorage ? products.filter((p) => p.storageId === viewingStorage.id) : []}
-        onEdit={(s) => { setEditingStorage(s); setFormOpen(true) }}
-      />
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-        title="Delete storage location?"
-        message={`This will permanently remove ${deleteTarget?.name} from your warehouse network. This action cannot be undone.`}
-        confirmLabel="Delete Location"
-      />
+      <StorageFormModal open={formOpen} onClose={() => { setFormOpen(false); setEditingStorage(null) }} onSubmit={handleSubmit} initialData={editingStorage} />
+      <StorageViewModal open={!!viewingStorage} onClose={() => setViewingStorage(null)} storage={viewingStorage} productsInStorage={viewingStorage ? products.filter((p) => p.storageId === viewingStorage.id) : []} onEdit={(s) => { setEditingStorage(s); setFormOpen(true) }} />
+      <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete storage location?" message={`This will permanently remove ${deleteTarget?.name} from your warehouse network. This action cannot be undone.`} confirmLabel="Delete Location" />
     </div>
   )
 }

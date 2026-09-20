@@ -1,7 +1,3 @@
-// Centralized dummy/mock data.
-// Swap these arrays out for real API calls when a backend is connected —
-// the shape of each object is designed to map cleanly onto typical REST/DB fields.
-
 export const categories = [
   'Produce', 'Dairy & Eggs', 'Bakery', 'Meat & Seafood', 'Frozen Foods',
   'Beverages', 'Snacks', 'Pantry & Dry Goods', 'Household', 'Personal Care'
@@ -19,78 +15,14 @@ export const suppliers = [
 ]
 
 export const storageLocations = [
-  {
-    id: 'WH-A1',
-    name: 'Cold Storage A',
-    location: 'Building A, Bay 1',
-    type: 'Refrigerated',
-    capacity: 5000,
-    used: 3820,
-    status: 'Active'
-  },
-  {
-    id: 'WH-A2',
-    name: 'Freezer Vault A',
-    location: 'Building A, Bay 2',
-    type: 'Frozen',
-    capacity: 3200,
-    used: 2990,
-    status: 'Near Capacity'
-  },
-  {
-    id: 'WH-B1',
-    name: 'Dry Goods Aisle B',
-    location: 'Building B, Bay 1',
-    type: 'Ambient',
-    capacity: 8000,
-    used: 4310,
-    status: 'Active'
-  },
-  {
-    id: 'WH-B2',
-    name: 'Bakery Staging B',
-    location: 'Building B, Bay 2',
-    type: 'Ambient',
-    capacity: 2000,
-    used: 640,
-    status: 'Active'
-  },
-  {
-    id: 'WH-C1',
-    name: 'Beverage Depot C',
-    location: 'Building C, Bay 1',
-    type: 'Ambient',
-    capacity: 6000,
-    used: 5940,
-    status: 'Near Capacity'
-  },
-  {
-    id: 'WH-C2',
-    name: 'Household Overflow C',
-    location: 'Building C, Bay 2',
-    type: 'Ambient',
-    capacity: 4500,
-    used: 1120,
-    status: 'Active'
-  },
-  {
-    id: 'WH-D1',
-    name: 'Receiving Dock D',
-    location: 'Building D, Dock 1',
-    type: 'Staging',
-    capacity: 1500,
-    used: 1500,
-    status: 'Full'
-  },
-  {
-    id: 'WH-D2',
-    name: 'Returns & Quarantine D',
-    location: 'Building D, Dock 2',
-    type: 'Staging',
-    capacity: 800,
-    used: 95,
-    status: 'Inactive'
-  }
+  { id: 'WH-A1', name: 'Cold Storage A', location: 'Building A, Bay 1', type: 'Refrigerated', capacity: 5000, used: 3820, status: 'Active' },
+  { id: 'WH-A2', name: 'Freezer Vault A', location: 'Building A, Bay 2', type: 'Frozen', capacity: 3200, used: 2990, status: 'Near Capacity' },
+  { id: 'WH-B1', name: 'Dry Goods Aisle B', location: 'Building B, Bay 1', type: 'Ambient', capacity: 8000, used: 4310, status: 'Active' },
+  { id: 'WH-B2', name: 'Bakery Staging B', location: 'Building B, Bay 2', type: 'Ambient', capacity: 2000, used: 640, status: 'Active' },
+  { id: 'WH-C1', name: 'Beverage Depot C', location: 'Building C, Bay 1', type: 'Ambient', capacity: 6000, used: 5940, status: 'Near Capacity' },
+  { id: 'WH-C2', name: 'Household Overflow C', location: 'Building C, Bay 2', type: 'Ambient', capacity: 4500, used: 1120, status: 'Active' },
+  { id: 'WH-D1', name: 'Receiving Dock D', location: 'Building D, Dock 1', type: 'Staging', capacity: 1500, used: 1500, status: 'Full' },
+  { id: 'WH-D2', name: 'Returns & Quarantine D', location: 'Building D, Dock 2', type: 'Staging', capacity: 800, used: 95, status: 'Inactive' }
 ]
 
 const productSeed = [
@@ -143,17 +75,7 @@ export const products = productSeed.map(([name, category, supplierId, price, uni
   if (quantity === 0) status = 'Out of Stock'
   else if (quantity <= minStock) status = 'Low Stock'
   return {
-    id,
-    sku,
-    name,
-    category,
-    supplierId,
-    price,
-    unit,
-    quantity,
-    minStock,
-    storageId,
-    status,
+    id, sku, name, category, supplierId, price, unit, quantity, minStock, storageId, status,
     value: Number((price * quantity).toFixed(2)),
     addedOn: new Date(2025, (i * 3) % 12, ((i * 7) % 27) + 1).toISOString()
   }
@@ -207,15 +129,9 @@ export const transactions = Array.from({ length: 60 }).map((_, i) => {
   date.setHours(8 + (i % 10), (i * 11) % 60)
   return {
     id: `TXN-${String(10245 + i)}`,
-    type,
-    productId: product.id,
-    productName: product.name,
-    sku: product.sku,
-    quantity,
-    date: date.toISOString(),
-    user: users[i % users.length],
-    reason: reasonList[i % reasonList.length],
-    storageId: product.storageId
+    type, productId: product.id, productName: product.name, sku: product.sku,
+    quantity, date: date.toISOString(), user: users[i % users.length],
+    reason: reasonList[i % reasonList.length], storageId: product.storageId
   }
 }).sort((a, b) => new Date(b.date) - new Date(a.date))
 

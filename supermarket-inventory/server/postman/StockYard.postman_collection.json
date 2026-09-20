@@ -20,47 +20,31 @@
         {
           "name": "Register",
           "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const data = pm.response.json();",
-                  "if (data.token) pm.collectionVariables.set('token', data.token);"
-                ]
-              }
-            }
+            { "listen": "test", "script": { "exec": [
+              "const data = pm.response.json();",
+              "if (data.token) pm.collectionVariables.set('token', data.token);"
+            ] } }
           ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}/api/auth/register",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Maria Winters\",\n  \"email\": \"maria@stockyard.com\",\n  \"password\": \"SuperSecret123\",\n  \"role\": \"admin\"\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Maria Winters\",\n  \"email\": \"maria@stockyard.com\",\n  \"password\": \"SuperSecret123\",\n  \"role\": \"admin\"\n}" }
           }
         },
         {
           "name": "Login",
           "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const data = pm.response.json();",
-                  "if (data.token) pm.collectionVariables.set('token', data.token);"
-                ]
-              }
-            }
+            { "listen": "test", "script": { "exec": [
+              "const data = pm.response.json();",
+              "if (data.token) pm.collectionVariables.set('token', data.token);"
+            ] } }
           ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}/api/auth/login",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"maria@stockyard.com\",\n  \"password\": \"SuperSecret123\"\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"maria@stockyard.com\",\n  \"password\": \"SuperSecret123\"\n}" }
           }
         },
         {
@@ -83,15 +67,10 @@
         {
           "name": "Create Product (auth required)",
           "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const data = pm.response.json();",
-                  "if (data.product) pm.collectionVariables.set('productId', data.product._id);"
-                ]
-              }
-            }
+            { "listen": "test", "script": { "exec": [
+              "const data = pm.response.json();",
+              "if (data.product) pm.collectionVariables.set('productId', data.product._id);"
+            ] } }
           ],
           "request": {
             "method": "POST",
@@ -100,10 +79,7 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{baseUrl}}/api/products",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Organic Bananas\",\n  \"sku\": \"PR1099\",\n  \"category\": \"Produce\",\n  \"price\": 1.29,\n  \"unit\": \"kg\",\n  \"quantity\": 150,\n  \"minStock\": 40,\n  \"storageId\": \"WH-B1\"\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Organic Bananas\",\n  \"sku\": \"PR1099\",\n  \"category\": \"Produce\",\n  \"price\": 1.29,\n  \"unit\": \"kg\",\n  \"quantity\": 150,\n  \"minStock\": 40,\n  \"storageId\": \"WH-B1\"\n}" }
           }
         },
         {
@@ -131,10 +107,7 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{baseUrl}}/api/products/{{productId}}/stock",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"direction\": \"in\",\n  \"quantity\": 25,\n  \"reason\": \"Supplier Restock\"\n}"
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"direction\": \"in\",\n  \"quantity\": 25,\n  \"reason\": \"Supplier Restock\"\n}" }
           }
         },
         {

@@ -75,9 +75,7 @@ function InventoryContent() {
               {' '}{lowStockCount} running low and {outOfStockCount} completely out of stock.
             </p>
           </div>
-          <Button size="sm" variant="secondary" icon={ClipboardList} onClick={() => setReorderOpen(true)} className="shrink-0">
-            Reorder List {count > 0 && `(${count})`}
-          </Button>
+          <Button size="sm" variant="secondary" icon={ClipboardList} onClick={() => setReorderOpen(true)} className="shrink-0">Reorder List {count > 0 && `(${count})`}</Button>
         </div>
       )}
 
@@ -85,12 +83,7 @@ function InventoryContent() {
         <div className="px-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
           <div className="relative w-full lg:w-64">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search inventory…"
-              className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400"
-            />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search inventory…" className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
           </div>
           <div className="flex flex-col sm:flex-row gap-2.5">
             <SelectField value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full sm:w-44">
@@ -105,9 +98,7 @@ function InventoryContent() {
               {storageLocations.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </SelectField>
             {lowStockCount + outOfStockCount === 0 && (
-              <Button size="md" variant="secondary" icon={ClipboardList} onClick={() => setReorderOpen(true)}>
-                Reorder List {count > 0 && `(${count})`}
-              </Button>
+              <Button size="md" variant="secondary" icon={ClipboardList} onClick={() => setReorderOpen(true)}>Reorder List {count > 0 && `(${count})`}</Button>
             )}
           </div>
         </div>
@@ -118,11 +109,7 @@ function InventoryContent() {
           ) : (
             <>
               <Table
-                columns={COLUMNS}
-                data={paged}
-                sortKey={sortKey}
-                sortDir={sortDir}
-                onSort={onSort}
+                columns={COLUMNS} data={paged} sortKey={sortKey} sortDir={sortDir} onSort={onSort}
                 renderRow={(p) => (
                   <tr key={p.id} className={`hover:bg-slate-50/70 dark:hover:bg-ink-700/40 transition-colors ${p.status === 'Out of Stock' ? 'bg-rose-50/40 dark:bg-rose-500/[0.03]' : ''}`}>
                     <Td><span className="font-medium text-slate-800 dark:text-slate-100">{p.name}</span></Td>
@@ -136,12 +123,7 @@ function InventoryContent() {
                     <Td>
                       <div className="flex justify-end gap-1.5">
                         {p.status !== 'In Stock' && (
-                          <Button
-                            size="sm" variant="secondary" icon={ListPlus}
-                            disabled={isInReorder(p.id)}
-                            onClick={() => { addItem({ id: p.id, name: p.name, unit: p.unit, suggested: Math.max(p.minStock * 2 - p.quantity, p.minStock) }); addToast(`${p.name} added to reorder list`) }}
-                            title="Add to reorder list"
-                          />
+                          <Button size="sm" variant="secondary" icon={ListPlus} disabled={isInReorder(p.id)} onClick={() => { addItem({ id: p.id, name: p.name, unit: p.unit, suggested: Math.max(p.minStock * 2 - p.quantity, p.minStock) }); addToast(`${p.name} added to reorder list`) }} title="Add to reorder list" />
                         )}
                         <Button size="sm" variant="secondary" icon={PackagePlus} onClick={() => setStockProduct(p)}>Adjust</Button>
                       </div>
@@ -155,16 +137,7 @@ function InventoryContent() {
         </div>
       </Card>
 
-      <StockAdjustModal
-        open={!!stockProduct}
-        onClose={() => setStockProduct(null)}
-        product={stockProduct}
-        onSubmit={(id, dir, qty, reason) => {
-          adjustStock(id, dir, qty, reason)
-          addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`)
-        }}
-      />
-
+      <StockAdjustModal open={!!stockProduct} onClose={() => setStockProduct(null)} product={stockProduct} onSubmit={(id, dir, qty, reason) => { adjustStock(id, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`) }} />
       <ReorderListModal open={reorderOpen} onClose={() => setReorderOpen(false)} />
     </div>
   )

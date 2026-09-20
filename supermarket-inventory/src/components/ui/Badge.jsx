@@ -8,20 +8,11 @@ const TONES = {
 }
 
 const STATUS_TONE = {
-  'In Stock': 'success',
-  'Low Stock': 'warning',
-  'Out of Stock': 'danger',
-  Active: 'success',
-  Inactive: 'neutral',
-  VIP: 'info',
-  'Near Capacity': 'warning',
-  Full: 'danger',
-  'Stock In': 'success',
-  'Stock Out': 'warning',
-  Refrigerated: 'info',
-  Frozen: 'info',
-  Ambient: 'neutral',
-  Staging: 'teal'
+  'In Stock': 'success', 'Low Stock': 'warning', 'Out of Stock': 'danger',
+  Active: 'success', Inactive: 'neutral', VIP: 'info',
+  'Near Capacity': 'warning', Full: 'danger',
+  'Stock In': 'success', 'Stock Out': 'warning',
+  Refrigerated: 'info', Frozen: 'info', Ambient: 'neutral', Staging: 'teal'
 }
 
 export default function Badge({ children, tone }) {

@@ -94,7 +94,20 @@ src/
 server/            Express + MongoDB/Mongoose + JWT + WebSocket API (see server/README.md)
 ```
 
-## Connecting the frontend's demo data to a real backend
+## How each lab experiment maps to the code
+
+| Exp | Topic | Where |
+|---|---|---|
+| 1 | Tailwind CSS UI | Every component in `src/`, styled entirely with Tailwind utility classes |
+| 2 | React Hooks (`useEffect`, `useContext`, custom hooks) | `src/hooks/`, used inside `ThemeContext.jsx` and `RealtimeContext.jsx` |
+| 3 | Complex state (`useReducer` + Context API) | `src/context/ReorderCartContext.jsx`, used in `Inventory.jsx` + `ReorderListModal.jsx` |
+| 4 | REST API + MongoDB/Mongoose | `server/src/models/`, `server/src/routes/`, `server/src/controllers/` |
+| 5 | Secure, production-ready APIs | `server/src/middleware/`, helmet/cors/rate-limit/validator in `server/src/index.js` |
+| 6 | JWT auth & roles | `server/src/models/User.js`, `authController.js`, `middleware/auth.js` |
+| 7 | Postman validation | `server/postman/StockYard.postman_collection.json` |
+| 8 | Real-time (WebSockets) | `server/src/index.js` (the `ws` server) + `src/context/RealtimeContext.jsx` |
+
+## Connecting the frontend's demo data to the backend
 
 Right now the frontend's `DataContext` manages products/storage/customers/
 transactions entirely in memory, independent of `server/`. To wire them together:

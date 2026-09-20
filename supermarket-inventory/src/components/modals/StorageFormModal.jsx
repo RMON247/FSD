@@ -4,7 +4,6 @@ import Button from '../ui/Button.jsx'
 import { TextField, SelectField } from '../ui/Field.jsx'
 
 const STORAGE_TYPES = ['Refrigerated', 'Frozen', 'Ambient', 'Staging']
-
 const emptyForm = { name: '', location: '', type: 'Ambient', capacity: '', used: '' }
 
 export default function StorageFormModal({ open, onClose, onSubmit, initialData }) {
@@ -14,11 +13,8 @@ export default function StorageFormModal({ open, onClose, onSubmit, initialData 
   useEffect(() => {
     if (open) {
       setForm(initialData ? {
-        name: initialData.name,
-        location: initialData.location,
-        type: initialData.type,
-        capacity: initialData.capacity,
-        used: initialData.used
+        name: initialData.name, location: initialData.location, type: initialData.type,
+        capacity: initialData.capacity, used: initialData.used
       } : emptyForm)
       setErrors({})
     }
@@ -43,52 +39,20 @@ export default function StorageFormModal({ open, onClose, onSubmit, initialData 
 
   return (
     <Modal
-      open={open}
-      onClose={onClose}
+      open={open} onClose={onClose}
       title={initialData ? 'Edit Storage Location' : 'Add Storage Location'}
       subtitle={initialData ? `Editing ${initialData.id}` : 'Register a new warehouse storage area'}
-      footer={(
-        <>
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>{initialData ? 'Save Changes' : 'Add Location'}</Button>
-        </>
-      )}
+      footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={handleSubmit}>{initialData ? 'Save Changes' : 'Add Location'}</Button></>}
     >
       <div className="space-y-4">
-        <TextField
-          label="Storage Name" required
-          placeholder="e.g. Cold Storage A"
-          value={form.name}
-          error={errors.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <TextField
-          label="Location" required
-          placeholder="e.g. Building A, Bay 1"
-          value={form.location}
-          error={errors.location}
-          onChange={(e) => setForm({ ...form, location: e.target.value })}
-        />
-        <SelectField
-          label="Storage Type" required
-          value={form.type}
-          onChange={(e) => setForm({ ...form, type: e.target.value })}
-        >
+        <TextField label="Storage Name" required placeholder="e.g. Cold Storage A" value={form.name} error={errors.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <TextField label="Location" required placeholder="e.g. Building A, Bay 1" value={form.location} error={errors.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+        <SelectField label="Storage Type" required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
           {STORAGE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
         </SelectField>
         <div className="grid grid-cols-2 gap-4">
-          <TextField
-            label="Total Capacity (units)" required type="number" min="0"
-            value={form.capacity}
-            error={errors.capacity}
-            onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-          />
-          <TextField
-            label="Current Usage (units)" required type="number" min="0"
-            value={form.used}
-            error={errors.used}
-            onChange={(e) => setForm({ ...form, used: e.target.value })}
-          />
+          <TextField label="Total Capacity (units)" required type="number" min="0" value={form.capacity} error={errors.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} />
+          <TextField label="Current Usage (units)" required type="number" min="0" value={form.used} error={errors.used} onChange={(e) => setForm({ ...form, used: e.target.value })} />
         </div>
       </div>
     </Modal>

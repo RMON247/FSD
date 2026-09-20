@@ -8,11 +8,9 @@ import { validate } from '../utils/validate.js'
 
 const router = Router()
 
-// Public reads — anyone can browse the catalog
 router.get('/', listProducts)
 router.get('/:id', param('id').isMongoId(), validate, getProduct)
 
-// Authenticated writes — any logged-in manager/admin can create or update
 router.post(
   '/',
   requireAuth,
@@ -42,7 +40,6 @@ router.patch(
   adjustStock
 )
 
-// Admin-only — deleting a product is destructive
 router.delete('/:id', requireAuth, requireRole('admin'), param('id').isMongoId(), validate, deleteProduct)
 
 export default router

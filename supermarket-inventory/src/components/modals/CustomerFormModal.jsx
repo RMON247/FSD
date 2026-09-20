@@ -11,9 +11,7 @@ export default function CustomerFormModal({ open, onClose, onSubmit, initialData
 
   useEffect(() => {
     if (open) {
-      setForm(initialData ? {
-        name: initialData.name, email: initialData.email, phone: initialData.phone, status: initialData.status
-      } : emptyForm)
+      setForm(initialData ? { name: initialData.name, email: initialData.email, phone: initialData.phone, status: initialData.status } : emptyForm)
       setErrors({})
     }
   }, [open, initialData])
@@ -36,38 +34,16 @@ export default function CustomerFormModal({ open, onClose, onSubmit, initialData
 
   return (
     <Modal
-      open={open}
-      onClose={onClose}
+      open={open} onClose={onClose}
       title={initialData ? 'Edit Customer' : 'Add New Customer'}
       subtitle={initialData ? `Editing ${initialData.id}` : 'Register a new customer profile'}
-      footer={(
-        <>
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>{initialData ? 'Save Changes' : 'Add Customer'}</Button>
-        </>
-      )}
+      footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={handleSubmit}>{initialData ? 'Save Changes' : 'Add Customer'}</Button></>}
     >
       <div className="space-y-4">
-        <TextField
-          label="Full Name" required placeholder="e.g. Amara Osei"
-          value={form.name} error={errors.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <TextField
-          label="Email Address" required type="email" placeholder="name@mail.com"
-          value={form.email} error={errors.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
-        <TextField
-          label="Phone Number" required placeholder="+1 (555) 000-0000"
-          value={form.phone} error={errors.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-        />
-        <SelectField
-          label="Status"
-          value={form.status}
-          onChange={(e) => setForm({ ...form, status: e.target.value })}
-        >
+        <TextField label="Full Name" required placeholder="e.g. Amara Osei" value={form.name} error={errors.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <TextField label="Email Address" required type="email" placeholder="name@mail.com" value={form.email} error={errors.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        <TextField label="Phone Number" required placeholder="+1 (555) 000-0000" value={form.phone} error={errors.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+        <SelectField label="Status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
           <option value="Active">Active</option>
           <option value="VIP">VIP</option>
           <option value="Inactive">Inactive</option>

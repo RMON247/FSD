@@ -6,23 +6,15 @@ export default function StorageViewModal({ open, onClose, storage, productsInSto
   if (!storage) return null
   const available = Math.max(0, storage.capacity - storage.used)
   const usagePct = Math.min(100, Math.round((storage.used / storage.capacity) * 100))
-
   const barColor = usagePct >= 95 ? 'bg-rose-500' : usagePct >= 80 ? 'bg-amber-500' : 'bg-teal-500'
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={storage.name}
-      subtitle={`${storage.id} · ${storage.location}`}
-      footer={<Button onClick={() => { onClose(); onEdit(storage) }}>Edit Location</Button>}
-    >
+    <Modal open={open} onClose={onClose} title={storage.name} subtitle={`${storage.id} · ${storage.location}`} footer={<Button onClick={() => { onClose(); onEdit(storage) }}>Edit Location</Button>}>
       <div className="space-y-5">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge>{storage.status}</Badge>
           <Badge tone="neutral">{storage.type}</Badge>
         </div>
-
         <div>
           <div className="flex items-center justify-between text-xs mb-1.5">
             <span className="text-slate-500 dark:text-slate-400">Capacity used</span>
@@ -32,7 +24,6 @@ export default function StorageViewModal({ open, onClose, storage, productsInSto
             <div className={`h-full rounded-full ${barColor}`} style={{ width: `${usagePct}%` }} />
           </div>
         </div>
-
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-lg bg-slate-50 dark:bg-ink-900 p-3 text-center">
             <p className="text-lg font-display font-bold text-slate-800 dark:text-white tabular">{storage.capacity.toLocaleString()}</p>
@@ -47,7 +38,6 @@ export default function StorageViewModal({ open, onClose, storage, productsInSto
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Available Space</p>
           </div>
         </div>
-
         <div>
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Products stored here ({productsInStorage.length})</p>
           {productsInStorage.length === 0 ? (

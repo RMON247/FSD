@@ -22,15 +22,7 @@ export default function StockTrendChart({ data }) {
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
         <XAxis dataKey="month" tick={{ fill: textColor, fontSize: 12 }} axisLine={{ stroke: gridColor }} tickLine={false} />
         <YAxis tick={{ fill: textColor, fontSize: 12 }} axisLine={false} tickLine={false} />
-        <Tooltip
-          contentStyle={{
-            background: theme === 'dark' ? '#151F35' : '#fff',
-            border: `1px solid ${gridColor}`,
-            borderRadius: 10,
-            fontSize: 12,
-            color: theme === 'dark' ? '#E2E8F0' : '#1E293B'
-          }}
-        />
+        <Tooltip contentStyle={{ background: theme === 'dark' ? '#151F35' : '#fff', border: `1px solid ${gridColor}`, borderRadius: 10, fontSize: 12, color: theme === 'dark' ? '#E2E8F0' : '#1E293B' }} />
         <Legend wrapperStyle={{ fontSize: 12, color: textColor }} />
         <Area type="monotone" dataKey="in" name="Stock In" stroke="#0EA5A0" strokeWidth={2} fill="url(#colorIn)" />
         <Area type="monotone" dataKey="out" name="Stock Out" stroke="#4B63E8" strokeWidth={2} fill="url(#colorOut)" />

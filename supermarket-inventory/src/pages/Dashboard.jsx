@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom'
-import {
-  Boxes, DollarSign, AlertTriangle, XCircle, Users, PackageCheck,
-  ArrowUpRight, ArrowDownRight, ArrowRight
-} from 'lucide-react'
+import { Boxes, DollarSign, AlertTriangle, XCircle, Users, PackageCheck, ArrowUpRight, ArrowDownRight, ArrowRight } from 'lucide-react'
 import { useData } from '../context/DataContext.jsx'
 import StatCard from '../components/ui/StatCard.jsx'
 import Card, { CardHeader } from '../components/ui/Card.jsx'
@@ -50,11 +47,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <Card padded={false} className="pt-5">
           <div className="px-5">
-            <CardHeader
-              title="Recent Stock Activity"
-              subtitle="Latest inventory movements"
-              action={<Link to="/transactions" className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">View all <ArrowRight size={12} /></Link>}
-            />
+            <CardHeader title="Recent Stock Activity" subtitle="Latest inventory movements" action={<Link to="/transactions" className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">View all <ArrowRight size={12} /></Link>} />
           </div>
           {recentTransactions.length === 0 ? (
             <EmptyState title="No recent activity" message="Stock movements will appear here as they happen." />
@@ -72,9 +65,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <p className={`text-sm font-semibold tabular ${t.type === 'Stock In' ? 'text-teal-600 dark:text-teal-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                      {t.type === 'Stock In' ? '+' : '-'}{t.quantity}
-                    </p>
+                    <p className={`text-sm font-semibold tabular ${t.type === 'Stock In' ? 'text-teal-600 dark:text-teal-400' : 'text-amber-600 dark:text-amber-400'}`}>{t.type === 'Stock In' ? '+' : '-'}{t.quantity}</p>
                   </div>
                 </div>
               ))}
@@ -84,11 +75,7 @@ export default function Dashboard() {
 
         <Card padded={false} className="pt-5">
           <div className="px-5">
-            <CardHeader
-              title="Needs Attention"
-              subtitle="Low stock and out-of-stock products"
-              action={<Link to="/inventory" className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">View all <ArrowRight size={12} /></Link>}
-            />
+            <CardHeader title="Needs Attention" subtitle="Low stock and out-of-stock products" action={<Link to="/inventory" className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">View all <ArrowRight size={12} /></Link>} />
           </div>
           {attentionProducts.length === 0 ? (
             <EmptyState title="All stocked up" message="No products currently need restocking." />

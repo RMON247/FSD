@@ -74,10 +74,7 @@ export default function Reports() {
               <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0 border-slate-100 dark:border-ink-700">
                 <div className="flex items-center gap-3">
                   <span className="h-6 w-6 rounded-md bg-slate-100 dark:bg-ink-700 text-xs font-semibold text-slate-500 dark:text-slate-300 flex items-center justify-center">{i + 1}</span>
-                  <div>
-                    <p className="text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</p>
-                    <p className="text-xs text-slate-400">{p.category}</p>
-                  </div>
+                  <div><p className="text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</p><p className="text-xs text-slate-400">{p.category}</p></div>
                 </div>
                 <span className="text-sm font-semibold tabular text-slate-700 dark:text-slate-200">{p.quantity} {p.unit}</span>
               </div>
@@ -91,10 +88,7 @@ export default function Reports() {
               <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0 border-slate-100 dark:border-ink-700">
                 <div className="flex items-center gap-3">
                   <span className="h-6 w-6 rounded-md bg-slate-100 dark:bg-ink-700 text-xs font-semibold text-slate-500 dark:text-slate-300 flex items-center justify-center">{i + 1}</span>
-                  <div>
-                    <p className="text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</p>
-                    <p className="text-xs text-slate-400">{p.category}</p>
-                  </div>
+                  <div><p className="text-sm text-slate-700 dark:text-slate-200 font-medium">{p.name}</p><p className="text-xs text-slate-400">{p.category}</p></div>
                 </div>
                 <Badge>{p.status}</Badge>
               </div>
@@ -104,9 +98,7 @@ export default function Reports() {
       </div>
 
       <Card padded={false} className="pt-5">
-        <div className="px-5">
-          <CardHeader title="Low Stock & Reorder Report" subtitle="Products at or below minimum stock threshold" />
-        </div>
+        <div className="px-5"><CardHeader title="Low Stock & Reorder Report" subtitle="Products at or below minimum stock threshold" /></div>
         {lowStock.length === 0 ? (
           <EmptyState title="Nothing to reorder" message="All products are currently above their minimum stock threshold." />
         ) : (

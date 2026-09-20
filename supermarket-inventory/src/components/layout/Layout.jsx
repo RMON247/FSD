@@ -16,7 +16,7 @@ export default function Layout({ children }) {
           {children}
         </main>
         <footer className="text-center text-xs text-slate-400 dark:text-slate-600 py-4">
-          StockYard Warehouse Management &middot; Frontend demo data, ready for API integration
+          StockYard Warehouse Management &middot; Full-stack demo — frontend + Express/MongoDB backend
         </footer>
       </div>
     </div>

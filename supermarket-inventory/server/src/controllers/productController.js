@@ -9,7 +9,6 @@ export async function listProducts(req, res, next) {
 
     let products = await Product.find(query).sort({ name: 1 })
 
-    // status is a virtual (derived), so filter after the DB query
     if (status && status !== 'All') {
       products = products.filter((p) => p.status === status)
     }
@@ -42,10 +41,7 @@ export async function createProduct(req, res, next) {
 
 export async function updateProduct(req, res, next) {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    })
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
     if (!product) return res.status(404).json({ message: 'Product not found.' })
     req.app.locals.broadcast?.({ type: 'product:updated', payload: product })
     res.json({ product })
@@ -65,11 +61,6 @@ export async function deleteProduct(req, res, next) {
   }
 }
 
-/**
- * Stock adjustment endpoint — the "real-time" experiment (Exp 8).
- * Applies a stock-in / stock-out delta, then broadcasts the update to every
- * connected WebSocket client so all open dashboards refresh instantly.
- */
 export async function adjustStock(req, res, next) {
   try {
     const { direction, quantity, reason } = req.body

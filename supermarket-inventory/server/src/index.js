@@ -5,7 +5,6 @@ import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import { WebSocketServer } from 'ws'
-import mongoose from 'mongoose'
 
 import { connectDB } from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
@@ -14,64 +13,15 @@ import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true)
-
-      if (!process.env.CORS_ORIGIN || process.env.CORS_ORIGIN === '*') {
-        return callback(null, origin)
-      }
-
-      const origins = process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-      if (origins.includes(origin) || origins.includes('*')) {
-        return callback(null, origin)
-      }
-
-      try {
-        const hostname = new URL(origin).hostname
-        if (hostname.endsWith('.vercel.app') || hostname === 'localhost' || hostname === '127.0.0.1') {
-          return callback(null, origin)
-        }
-      } catch {
-        // ignore invalid URL
-      }
-
-      callback(null, false)
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-  })
-)
-app.use(helmet({ crossOriginResourcePolicy: false }))
+// ---- Security & parsing middleware (Experiment 5) ----
+app.use(helmet())
+app.use(cors({ origin: (process.env.CORS_ORIGIN || '*').split(',') }))
 app.use(express.json({ limit: '100kb' }))
 
-
-
-// Rate-limit all API routes to blunt brute-force / abuse
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }))
-
-// Stricter limiter on auth endpoints specifically (login/register brute force)
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }))
 
-// Root & Health endpoints
-app.get('/', (req, res) => {
-  res.json({
-    message: 'StockYard Inventory REST & WebSocket API',
-    status: 'online',
-    dbConnected: mongoose.connection.readyState === 1,
-    health: '/health'
-  })
-})
-
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    uptime: process.uptime(),
-    dbConnected: mongoose.connection.readyState === 1
-  })
-})
+app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }))
 
 // ---- REST API routes (Experiment 4) ----
 app.use('/api/auth', authRoutes)
@@ -105,24 +55,22 @@ wss.on('connection', (socket) => {
 })
 
 const PORT = process.env.PORT || 4000
-const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.DATABASE_URL
 
 async function start() {
   try {
-    if (mongoUri) {
-      await connectDB(mongoUri)
+    if (process.env.MONGODB_URI) {
+      await connectDB(process.env.MONGODB_URI)
     } else {
-      console.warn('[startup] MONGODB_URI/MONGO_URI environment variable is not set. API is running but DB routes will fail.')
+      console.warn('[startup] MONGODB_URI not set — API will start but DB routes will fail until it is configured.')
     }
   } catch (err) {
-    console.error('[startup] Failed to connect to MongoDB Atlas:', err.message)
-    console.warn('[startup] Server is running, but database operations will fail until MongoDB connection is established.')
+    console.error('[startup] Failed to connect to MongoDB:', err.message)
+    console.warn('[startup] Continuing to start the HTTP/WebSocket server anyway.')
   }
 
   server.listen(PORT, () => {
-    console.log(`[startup] StockYard API + WebSocket server listening on port ${PORT}`)
+    console.log(`[startup] StockYard API + WebSocket server listening on http://localhost:${PORT}`)
   })
 }
 
 start()
-

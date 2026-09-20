@@ -3,16 +3,7 @@ import { useInterval } from '../hooks/useInterval.js'
 
 const RealtimeContext = createContext(null)
 
-function getWsUrl() {
-  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/^http/, 'ws')
-  }
-  return 'ws://localhost:4000'
-}
-
-const WS_URL = getWsUrl()
-
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:4000'
 
 export function RealtimeProvider({ children }) {
   const [connected, setConnected] = useState(false)
@@ -22,7 +13,6 @@ export function RealtimeProvider({ children }) {
   const socketRef = useRef(null)
   const listenersRef = useRef(new Set())
 
-  // useEffect: open a WebSocket connection to the backend on mount, clean up on unmount
   useEffect(() => {
     let retryTimer
     let cancelled = false
@@ -50,7 +40,7 @@ export function RealtimeProvider({ children }) {
         ws.onclose = () => {
           if (cancelled) return
           setConnected(false)
-          retryTimer = setTimeout(connect, 4000) // auto-reconnect
+          retryTimer = setTimeout(connect, 4000)
         }
         ws.onerror = () => ws.close()
       } catch {
@@ -66,7 +56,6 @@ export function RealtimeProvider({ children }) {
     }
   }, [])
 
-  // custom hook useInterval: ticks every second to keep "synced Xs ago" live, no matter the connection state
   useInterval(() => {
     setSecondsAgo(Math.round((Date.now() - lastSyncedAt) / 1000))
   }, 1000)

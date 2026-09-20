@@ -17,13 +17,7 @@ export default function CategoryValueChart({ data }) {
         <YAxis dataKey="category" type="category" width={110} tick={{ fill: textColor, fontSize: 11 }} axisLine={false} tickLine={false} />
         <Tooltip
           formatter={(value) => [`$${value.toLocaleString()}`, 'Inventory Value']}
-          contentStyle={{
-            background: theme === 'dark' ? '#151F35' : '#fff',
-            border: `1px solid ${gridColor}`,
-            borderRadius: 10,
-            fontSize: 12,
-            color: theme === 'dark' ? '#E2E8F0' : '#1E293B'
-          }}
+          contentStyle={{ background: theme === 'dark' ? '#151F35' : '#fff', border: `1px solid ${gridColor}`, borderRadius: 10, fontSize: 12, color: theme === 'dark' ? '#E2E8F0' : '#1E293B' }}
         />
         <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={14}>
           {sorted.map((entry, i) => (

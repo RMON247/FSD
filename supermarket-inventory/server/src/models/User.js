@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
-// Hash the password before saving (never store plaintext)
 userSchema.pre('save', async function hashPassword(next) {
   if (!this.isModified('password')) return next()
   const salt = await bcrypt.genSalt(10)

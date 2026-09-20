@@ -9,14 +9,7 @@ export default function CustomerViewModal({ open, onClose, customer, onEdit }) {
   if (!customer) return null
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      size="lg"
-      title={customer.name}
-      subtitle={customer.id}
-      footer={<Button onClick={() => { onClose(); onEdit(customer) }}>Edit Customer</Button>}
-    >
+    <Modal open={open} onClose={onClose} size="lg" title={customer.name} subtitle={customer.id} footer={<Button onClick={() => { onClose(); onEdit(customer) }}>Edit Customer</Button>}>
       <div className="space-y-5">
         <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
           <span className="flex items-center gap-1.5"><Mail size={14} className="text-slate-400" /> {customer.email}</span>
@@ -24,7 +17,6 @@ export default function CustomerViewModal({ open, onClose, customer, onEdit }) {
           <span className="flex items-center gap-1.5"><CalendarDays size={14} className="text-slate-400" /> Joined {formatDate(customer.joinedOn)}</span>
           <Badge>{customer.status}</Badge>
         </div>
-
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg bg-slate-50 dark:bg-ink-900 p-3 text-center">
             <p className="text-lg font-display font-bold text-slate-800 dark:text-white tabular">{formatCurrencyPrecise(customer.totalPurchases)}</p>
@@ -35,7 +27,6 @@ export default function CustomerViewModal({ open, onClose, customer, onEdit }) {
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Total Orders</p>
           </div>
         </div>
-
         <div>
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Purchase History</p>
           {customer.purchaseHistory.length === 0 ? (

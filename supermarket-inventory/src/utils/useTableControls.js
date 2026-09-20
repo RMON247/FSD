@@ -12,9 +12,7 @@ export function useTableControls(data, { pageSize = 8, initialSortKey = null, in
       const av = a[sortKey]
       const bv = b[sortKey]
       if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av
-      return sortDir === 'asc'
-        ? String(av).localeCompare(String(bv))
-        : String(bv).localeCompare(String(av))
+      return sortDir === 'asc' ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av))
     })
     return copy
   }, [data, sortKey, sortDir])

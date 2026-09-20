@@ -14,7 +14,6 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
-// Virtual field: derived status, mirrors the frontend's logic — not stored, always computed
 productSchema.virtual('status').get(function status() {
   if (this.quantity === 0) return 'Out of Stock'
   if (this.quantity <= this.minStock) return 'Low Stock'
@@ -22,7 +21,6 @@ productSchema.virtual('status').get(function status() {
 })
 
 productSchema.set('toJSON', { virtuals: true })
-
 productSchema.index({ name: 'text', sku: 'text' })
 
 export default mongoose.model('Product', productSchema)

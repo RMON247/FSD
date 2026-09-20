@@ -65,12 +65,7 @@ export default function Customers() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative w-full sm:w-72">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search customers…"
-            className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400"
-          />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search customers…" className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
         </div>
         <Button icon={Plus} onClick={() => { setEditingCustomer(null); setFormOpen(true) }}>Add Customer</Button>
       </div>
@@ -78,37 +73,20 @@ export default function Customers() {
       <Card padded={false} className="pt-5">
         <div className="px-5">
           {paged.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="No customers found"
-              message={search ? `No results for "${search}".` : 'Add your first customer to begin tracking purchases.'}
-              action={!search && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Customer</Button>}
-            />
+            <EmptyState icon={Users} title="No customers found" message={search ? `No results for "${search}".` : 'Add your first customer to begin tracking purchases.'} action={!search && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Customer</Button>} />
           ) : (
             <>
               <Table
-                columns={COLUMNS}
-                data={paged}
-                sortKey={sortKey}
-                sortDir={sortDir}
-                onSort={onSort}
+                columns={COLUMNS} data={paged} sortKey={sortKey} sortDir={sortDir} onSort={onSort}
                 renderRow={(c) => (
                   <tr key={c.id} className="hover:bg-slate-50/70 dark:hover:bg-ink-700/40 transition-colors">
                     <Td>
                       <div className="flex items-center gap-2.5">
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold shrink-0">
-                          {c.name.split(' ').map((n) => n[0]).join('')}
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-800 dark:text-slate-100">{c.name}</p>
-                          <p className="text-xs text-slate-400 font-mono">{c.id}</p>
-                        </div>
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold shrink-0">{c.name.split(' ').map((n) => n[0]).join('')}</div>
+                        <div><p className="font-medium text-slate-800 dark:text-slate-100">{c.name}</p><p className="text-xs text-slate-400 font-mono">{c.id}</p></div>
                       </div>
                     </Td>
-                    <Td>
-                      <p className="text-slate-600 dark:text-slate-300">{c.email}</p>
-                      <p className="text-xs text-slate-400">{c.phone}</p>
-                    </Td>
+                    <Td><p className="text-slate-600 dark:text-slate-300">{c.email}</p><p className="text-xs text-slate-400">{c.phone}</p></Td>
                     <Td className="text-right tabular">{c.orderCount}</Td>
                     <Td className="text-right tabular font-medium">{formatCurrencyPrecise(c.totalPurchases)}</Td>
                     <Td><Badge>{c.status}</Badge></Td>
@@ -128,28 +106,9 @@ export default function Customers() {
         </div>
       </Card>
 
-      <CustomerFormModal
-        open={formOpen}
-        onClose={() => { setFormOpen(false); setEditingCustomer(null) }}
-        onSubmit={handleSubmit}
-        initialData={editingCustomer}
-      />
-
-      <CustomerViewModal
-        open={!!viewingCustomer}
-        onClose={() => setViewingCustomer(null)}
-        customer={viewingCustomer}
-        onEdit={(c) => { setEditingCustomer(c); setFormOpen(true) }}
-      />
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-        title="Delete customer?"
-        message={`This will permanently remove ${deleteTarget?.name} and their purchase history.`}
-        confirmLabel="Delete Customer"
-      />
+      <CustomerFormModal open={formOpen} onClose={() => { setFormOpen(false); setEditingCustomer(null) }} onSubmit={handleSubmit} initialData={editingCustomer} />
+      <CustomerViewModal open={!!viewingCustomer} onClose={() => setViewingCustomer(null)} customer={viewingCustomer} onEdit={(c) => { setEditingCustomer(c); setFormOpen(true) }} />
+      <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete customer?" message={`This will permanently remove ${deleteTarget?.name} and their purchase history.`} confirmLabel="Delete Customer" />
     </div>
   )
 }

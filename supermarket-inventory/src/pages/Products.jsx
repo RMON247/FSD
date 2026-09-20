@@ -70,18 +70,9 @@ export default function Products() {
         <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
           <div className="relative w-full sm:w-64">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search products or SKU…"
-              className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400"
-            />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products or SKU…" className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
           </div>
-          <SelectField
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="w-full sm:w-48"
-          >
+          <SelectField value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full sm:w-48">
             <option value="All">All Categories</option>
             {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </SelectField>
@@ -92,22 +83,13 @@ export default function Products() {
       <Card padded={false} className="pt-5">
         <div className="px-5">
           {paged.length === 0 && (
-            <EmptyState
-              icon={ShoppingBasket}
-              title="No products found"
-              message={search || categoryFilter !== 'All' ? 'Try adjusting your search or filters.' : 'Add your first product to start tracking inventory.'}
-              action={!search && categoryFilter === 'All' && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Product</Button>}
-            />
+            <EmptyState icon={ShoppingBasket} title="No products found" message={search || categoryFilter !== 'All' ? 'Try adjusting your search or filters.' : 'Add your first product to start tracking inventory.'} action={!search && categoryFilter === 'All' && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Product</Button>} />
           )}
         </div>
         {paged.length > 0 && (
           <div className="px-5">
             <Table
-              columns={COLUMNS}
-              data={paged}
-              sortKey={sortKey}
-              sortDir={sortDir}
-              onSort={onSort}
+              columns={COLUMNS} data={paged} sortKey={sortKey} sortDir={sortDir} onSort={onSort}
               renderRow={(p) => (
                 <tr key={p.id} className="hover:bg-slate-50/70 dark:hover:bg-ink-700/40 transition-colors">
                   <Td>
@@ -122,9 +104,7 @@ export default function Products() {
                   <Td>
                     <div className="flex items-center justify-end gap-1.5">
                       <Button size="sm" variant="secondary" icon={PackagePlus} onClick={() => setStockProduct(p)} title="Adjust stock" />
-                      <Link to={`/products/${p.id}`}>
-                        <Button size="sm" variant="secondary" icon={Eye} title="View" />
-                      </Link>
+                      <Link to={`/products/${p.id}`}><Button size="sm" variant="secondary" icon={Eye} title="View" /></Link>
                       <Button size="sm" variant="secondary" icon={Pencil} onClick={() => { setEditingProduct(p); setFormOpen(true) }} title="Edit" />
                       <Button size="sm" variant="danger" icon={Trash2} onClick={() => setDeleteTarget(p)} title="Delete" />
                     </div>
@@ -137,31 +117,9 @@ export default function Products() {
         )}
       </Card>
 
-      <ProductFormModal
-        open={formOpen}
-        onClose={() => { setFormOpen(false); setEditingProduct(null) }}
-        onSubmit={handleSubmit}
-        initialData={editingProduct}
-      />
-
-      <StockAdjustModal
-        open={!!stockProduct}
-        onClose={() => setStockProduct(null)}
-        product={stockProduct}
-        onSubmit={(id, dir, qty, reason) => {
-          adjustStock(id, dir, qty, reason)
-          addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`)
-        }}
-      />
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-        title="Delete product?"
-        message={`This will permanently remove ${deleteTarget?.name} from your catalog and inventory records.`}
-        confirmLabel="Delete Product"
-      />
+      <ProductFormModal open={formOpen} onClose={() => { setFormOpen(false); setEditingProduct(null) }} onSubmit={handleSubmit} initialData={editingProduct} />
+      <StockAdjustModal open={!!stockProduct} onClose={() => setStockProduct(null)} product={stockProduct} onSubmit={(id, dir, qty, reason) => { adjustStock(id, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`) }} />
+      <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete product?" message={`This will permanently remove ${deleteTarget?.name} from your catalog and inventory records.`} confirmLabel="Delete Product" />
     </div>
   )
 }

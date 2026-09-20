@@ -64,7 +64,7 @@ export default function Topbar({ onMenuClick, pathname }) {
           {showResults && query.trim() && (
             <div className="absolute top-full mt-2 left-0 right-0 bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 rounded-xl shadow-panel dark:shadow-panel-dark overflow-hidden animate-fade-in">
               {results.length === 0 ? (
-                <p className="text-xs text-slate-400 px-4 py-3">No products match “{query}”.</p>
+                <p className="text-xs text-slate-400 px-4 py-3">No products match &ldquo;{query}&rdquo;.</p>
               ) : (
                 results.map((p) => (
                   <div key={p.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-ink-700 text-sm">

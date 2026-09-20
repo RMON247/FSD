@@ -4,7 +4,7 @@ import Button from './Button.jsx'
 
 export default function ConfirmDialog({ open, onClose, onConfirm, title, message, confirmLabel = 'Confirm', tone = 'danger' }) {
   return (
-    <Modal open={open} onClose={onClose} size="sm" title="" >
+    <Modal open={open} onClose={onClose} size="sm" title="">
       <div className="flex flex-col items-center text-center gap-3 -mt-2">
         <div className={`h-12 w-12 rounded-full flex items-center justify-center ${tone === 'danger' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'}`}>
           <AlertTriangle size={22} />

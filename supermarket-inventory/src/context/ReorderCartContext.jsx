@@ -1,16 +1,8 @@
 import { createContext, useContext, useMemo, useReducer } from 'react'
 
-/**
- * ReorderCartContext
- * Lets a user build a multi-product restock list (add/remove/adjust quantities)
- * from the Inventory page, then submit it as a batch of Stock-In transactions.
- * Complex, multi-action state is centralized in a single reducer (useReducer)
- * and shared via Context — no prop drilling required.
- */
-
 const ReorderCartContext = createContext(null)
 
-const initialState = { items: [] } // [{ id, name, unit, quantity }]
+const initialState = { items: [] }
 
 function reorderReducer(state, action) {
   switch (action.type) {

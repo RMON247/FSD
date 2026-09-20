@@ -12,15 +12,7 @@ const SIZES = {
   lg: 'px-5 py-2.5 text-sm gap-2'
 }
 
-export default function Button({
-  children,
-  variant = 'primary',
-  size = 'md',
-  icon: Icon,
-  className = '',
-  type = 'button',
-  ...props
-}) {
+export default function Button({ children, variant = 'primary', size = 'md', icon: Icon, className = '', type = 'button', ...props }) {
   return (
     <button
       type={type}

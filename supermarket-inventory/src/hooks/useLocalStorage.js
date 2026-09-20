@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react'
 
-/**
- * Custom Hook: useLocalStorage
- * Persists state to localStorage and keeps it in sync.
- * Demonstrates: encapsulating reusable stateful logic in a custom hook.
- */
 export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
     try {

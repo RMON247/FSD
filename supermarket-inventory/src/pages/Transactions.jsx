@@ -44,24 +44,15 @@ export default function Transactions() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center"><ArrowLeftRight size={18} /></div>
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Total Transactions</p>
-            <p className="text-lg font-display font-bold text-slate-800 dark:text-white tabular">{transactions.length.toLocaleString()}</p>
-          </div>
+          <div><p className="text-xs text-slate-500 dark:text-slate-400">Total Transactions</p><p className="text-lg font-display font-bold text-slate-800 dark:text-white tabular">{transactions.length.toLocaleString()}</p></div>
         </Card>
         <Card className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center"><ArrowDownRight size={18} /></div>
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Stock In Events</p>
-            <p className="text-lg font-display font-bold text-slate-800 dark:text-white tabular">{stockInCount.toLocaleString()}</p>
-          </div>
+          <div><p className="text-xs text-slate-500 dark:text-slate-400">Stock In Events</p><p className="text-lg font-display font-bold text-slate-800 dark:text-white tabular">{stockInCount.toLocaleString()}</p></div>
         </Card>
         <Card className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center"><ArrowUpRight size={18} /></div>
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Stock Out Events</p>
-            <p className="text-lg font-display font-bold text-slate-800 dark:text-white tabular">{stockOutCount.toLocaleString()}</p>
-          </div>
+          <div><p className="text-xs text-slate-500 dark:text-slate-400">Stock Out Events</p><p className="text-lg font-display font-bold text-slate-800 dark:text-white tabular">{stockOutCount.toLocaleString()}</p></div>
         </Card>
       </div>
 
@@ -69,12 +60,7 @@ export default function Transactions() {
         <div className="px-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
           <div className="relative w-full lg:w-64">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search transactions…"
-              className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400"
-            />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search transactions…" className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
           </div>
           <div className="flex flex-col sm:flex-row gap-2.5">
             <SelectField value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="w-full sm:w-40">
@@ -95,22 +81,13 @@ export default function Transactions() {
           ) : (
             <>
               <Table
-                columns={COLUMNS}
-                data={paged}
-                sortKey={sortKey}
-                sortDir={sortDir}
-                onSort={onSort}
+                columns={COLUMNS} data={paged} sortKey={sortKey} sortDir={sortDir} onSort={onSort}
                 renderRow={(t) => (
                   <tr key={t.id} className="hover:bg-slate-50/70 dark:hover:bg-ink-700/40 transition-colors">
                     <Td><span className="font-mono text-xs">{t.id}</span></Td>
-                    <Td>
-                      <p className="font-medium text-slate-800 dark:text-slate-100">{t.productName}</p>
-                      <p className="text-xs text-slate-400 font-mono">{t.sku}</p>
-                    </Td>
+                    <Td><p className="font-medium text-slate-800 dark:text-slate-100">{t.productName}</p><p className="text-xs text-slate-400 font-mono">{t.sku}</p></Td>
                     <Td><Badge>{t.type}</Badge></Td>
-                    <Td className={`text-right tabular font-semibold ${t.type === 'Stock In' ? 'text-teal-600 dark:text-teal-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                      {t.type === 'Stock In' ? '+' : '-'}{t.quantity}
-                    </Td>
+                    <Td className={`text-right tabular font-semibold ${t.type === 'Stock In' ? 'text-teal-600 dark:text-teal-400' : 'text-amber-600 dark:text-amber-400'}`}>{t.type === 'Stock In' ? '+' : '-'}{t.quantity}</Td>
                     <Td>{t.reason}</Td>
                     <Td>{t.user}</Td>
                     <Td className="whitespace-nowrap text-xs">{formatDateTime(t.date)}</Td>
