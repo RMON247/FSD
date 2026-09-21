@@ -33,7 +33,14 @@ export default function StorageFormModal({ open, onClose, onSubmit, initialData 
 
   const handleSubmit = () => {
     if (!validate()) return
-    onSubmit(form)
+    const payload = {
+      ...form,
+      name: form.name.trim(),
+      location: form.location.trim(),
+      capacity: Number(form.capacity),
+      used: Number(form.used)
+    }
+    onSubmit(payload)
     onClose()
   }
 

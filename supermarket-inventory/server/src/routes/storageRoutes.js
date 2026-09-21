@@ -13,10 +13,10 @@ router.post(
   '/',
   requireAuth,
   [
-    body('name').trim().notEmpty(),
-    body('location').trim().notEmpty(),
-    body('capacity').isFloat({ min: 0 }),
-    body('used').isFloat({ min: 0 })
+    body('name').trim().notEmpty().withMessage('Storage name is required'),
+    body('location').trim().notEmpty().withMessage('Location is required'),
+    body('capacity').toFloat().isFloat({ min: 0 }).withMessage('Capacity must be a valid non-negative number'),
+    body('used').toFloat().isFloat({ min: 0 }).withMessage('Used capacity must be a valid non-negative number')
   ],
   validate,
   createStorage

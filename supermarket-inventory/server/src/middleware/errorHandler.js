@@ -7,7 +7,7 @@ export function errorHandler(err, req, res, next) {
   console.error('[error]', err)
 
   if (err.name === 'ValidationError') {
-    return res.status(400).json({ message: 'Validation failed', details: err.message })
+    return res.status(400).json({ message: `Validation failed: ${err.message}`, details: err.message })
   }
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue || {})[0] || 'field'

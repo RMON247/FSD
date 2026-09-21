@@ -15,12 +15,12 @@ router.post(
   '/',
   requireAuth,
   [
-    body('name').trim().notEmpty(),
-    body('sku').trim().notEmpty(),
-    body('category').trim().notEmpty(),
-    body('price').isFloat({ min: 0 }),
-    body('quantity').isInt({ min: 0 }),
-    body('minStock').isInt({ min: 0 })
+    body('name').trim().notEmpty().withMessage('Product name is required'),
+    body('sku').optional({ checkFalsy: true }).trim(),
+    body('category').trim().notEmpty().withMessage('Category is required'),
+    body('price').toFloat().isFloat({ min: 0 }).withMessage('Price must be a valid non-negative number'),
+    body('quantity').toInt().isInt({ min: 0 }).withMessage('Quantity must be a valid non-negative integer'),
+    body('minStock').toInt().isInt({ min: 0 }).withMessage('Minimum stock must be a valid non-negative integer')
   ],
   validate,
   createProduct

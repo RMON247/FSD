@@ -32,7 +32,15 @@ export async function getProduct(req, res, next) {
 
 export async function createProduct(req, res, next) {
   try {
-    const product = await Product.create(req.body)
+    const payload = { ...req.body }
+    if (!payload.sku || !payload.sku.trim()) {
+      const prefix = (payload.category || 'PR').slice(0, 2).toUpperCase()
+      payload.sku = `${prefix}${Math.floor(1000 + Math.random() * 9000)}`
+    } else {
+      payload.sku = payload.sku.trim().toUpperCase()
+    }
+
+    const product = await Product.create(payload)
 
     if (product.quantity > 0) {
       await Transaction.create({
@@ -56,7 +64,14 @@ export async function createProduct(req, res, next) {
 
 export async function updateProduct(req, res, next) {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const payload = { ...req.body }
+    if (payload.sku === '') {
+      delete payload.sku
+    } else if (payload.sku) {
+      payload.sku = payload.sku.trim().toUpperCase()
+    }
+
+    const product = await Product.findByIdAndUpdate(req.params.id, payload, {
       new: true,
       runValidators: true
     })

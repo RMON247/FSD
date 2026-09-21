@@ -34,7 +34,14 @@ export default function ProductFormModal({ open, onClose, onSubmit, initialData 
 
   const handleSubmit = () => {
     if (!validate()) return
-    onSubmit(form)
+    const payload = {
+      ...form,
+      price: Number(form.price),
+      quantity: Number(form.quantity),
+      minStock: Number(form.minStock),
+      sku: form.sku.trim()
+    }
+    onSubmit(payload)
     onClose()
   }
 

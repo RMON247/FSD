@@ -46,7 +46,13 @@ export function DataProvider({ children }) {
     })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
-      throw new Error(data.message || data.errors?.[0]?.msg || `Request failed (${res.status})`)
+      const fieldErrors = data.errors?.map((e) => `${e.path || e.param}: ${e.msg}`).join('; ')
+      const detailMsg = fieldErrors || data.details
+      let errorMsg = data.message || `Request failed (${res.status})`
+      if (detailMsg && !errorMsg.includes(detailMsg)) {
+        errorMsg = `${errorMsg} (${detailMsg})`
+      }
+      throw new Error(errorMsg)
     }
     return data
   }, [authHeader])
