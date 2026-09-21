@@ -1,11 +1,10 @@
 import { Router } from 'express'
-import {
-  listTransactions, createTransaction
-} from '../controllers/transactionController.js'
+import { listTransactions } from '../controllers/transactionController.js'
 
 const router = Router()
 
+// Transactions are created internally by the product stock-adjust endpoint,
+// not directly by clients — so this only exposes reads.
 router.get('/', listTransactions)
-router.post('/', createTransaction)
 
 export default router

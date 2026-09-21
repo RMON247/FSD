@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { Menu, Search, Sun, Moon, Bell, ChevronDown, LogOut, UserCircle, Settings as SettingsIcon, Wifi, WifiOff } from 'lucide-react'
+import { Menu, Search, Sun, Moon, Bell, ChevronDown, LogOut, UserCircle, Wifi, WifiOff, LogIn } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import { useData } from '../../context/DataContext.jsx'
 import { useRealtime } from '../../context/RealtimeContext.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
+import AuthModal from '../modals/AuthModal.jsx'
 
 const PAGE_META = {
   '/': { title: 'Dashboard', subtitle: "Here's what's happening in your warehouse today." },
@@ -19,9 +21,11 @@ export default function Topbar({ onMenuClick, pathname }) {
   const { theme, toggleTheme } = useTheme()
   const { products } = useData()
   const { connected } = useRealtime()
+  const { isAuthenticated, user, logout } = useAuth()
   const [query, setQuery] = useState('')
   const [showResults, setShowResults] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
   const searchRef = useRef(null)
   const profileRef = useRef(null)
 
@@ -39,6 +43,8 @@ export default function Topbar({ onMenuClick, pathname }) {
   const results = query.trim()
     ? products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()) || p.sku.toLowerCase().includes(query.toLowerCase())).slice(0, 6)
     : []
+
+  const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '?'
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-white/90 dark:bg-ink-900/90 backdrop-blur border-b border-slate-200 dark:border-ink-700 flex items-center gap-4 px-4 lg:px-6 shrink-0">
@@ -101,33 +107,44 @@ export default function Topbar({ onMenuClick, pathname }) {
           <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
         </button>
 
-        <div ref={profileRef} className="relative pl-1.5 ml-1 border-l border-slate-200 dark:border-ink-700">
-          <button onClick={() => setProfileOpen((o) => !o)} className="flex items-center gap-2 pl-1.5 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-ink-700 transition-colors">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold">
-              MW
-            </div>
-            <div className="hidden md:block text-left">
-              <p className="text-xs font-medium text-slate-700 dark:text-slate-200 leading-tight">Maria Winters</p>
-              <p className="text-[10px] text-slate-400 leading-tight">Warehouse Manager</p>
-            </div>
-            <ChevronDown size={14} className="hidden md:block text-slate-400" />
+        {!isAuthenticated ? (
+          <button
+            onClick={() => setAuthOpen(true)}
+            className="flex items-center gap-1.5 pl-3 ml-1 border-l border-slate-200 dark:border-ink-700 text-sm font-medium text-brand-600 dark:text-brand-400 hover:underline"
+          >
+            <LogIn size={15} /> <span className="hidden sm:inline">Sign In</span>
           </button>
-          {profileOpen && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 rounded-xl shadow-panel dark:shadow-panel-dark overflow-hidden animate-fade-in py-1">
-              <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-ink-700">
-                <UserCircle size={15} /> My Profile
-              </button>
-              <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-ink-700">
-                <SettingsIcon size={15} /> Settings
-              </button>
-              <div className="h-px bg-slate-100 dark:bg-ink-700 my-1" />
-              <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10">
-                <LogOut size={15} /> Sign Out
-              </button>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div ref={profileRef} className="relative pl-1.5 ml-1 border-l border-slate-200 dark:border-ink-700">
+            <button onClick={() => setProfileOpen((o) => !o)} className="flex items-center gap-2 pl-1.5 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-ink-700 transition-colors">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold">
+                {initials}
+              </div>
+              <div className="hidden md:block text-left">
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 leading-tight">{user?.name}</p>
+                <p className="text-[10px] text-slate-400 leading-tight capitalize">{user?.role}</p>
+              </div>
+              <ChevronDown size={14} className="hidden md:block text-slate-400" />
+            </button>
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 rounded-xl shadow-panel dark:shadow-panel-dark overflow-hidden animate-fade-in py-1">
+                <div className="px-4 py-2.5 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                  <UserCircle size={15} /> {user?.email}
+                </div>
+                <div className="h-px bg-slate-100 dark:bg-ink-700 my-1" />
+                <button
+                  onClick={() => { logout(); setProfileOpen(false) }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                >
+                  <LogOut size={15} /> Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </header>
   )
 }

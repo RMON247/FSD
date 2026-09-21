@@ -1,16 +1,24 @@
 import mongoose from 'mongoose'
 
+const purchaseSchema = new mongoose.Schema(
+  {
+    product: { type: String, required: true },
+    quantity: { type: Number, required: true, min: 1 },
+    total: { type: Number, required: true, min: 0 },
+    date: { type: Date, default: Date.now }
+  },
+  { _id: true }
+)
+
 const customerSchema = new mongoose.Schema(
   {
-    code: { type: String, trim: true },
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, trim: true, lowercase: true },
-    phone: { type: String, trim: true },
-    status: { type: String, default: 'Active', trim: true },
-    joinedOn: { type: Date, default: Date.now },
-    totalPurchases: { type: Number, default: 0 },
-    orderCount: { type: Number, default: 0 },
-    purchaseHistory: { type: Array, default: [] }
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    phone: { type: String, required: true, trim: true },
+    status: { type: String, enum: ['Active', 'Inactive', 'VIP'], default: 'Active' },
+    totalPurchases: { type: Number, default: 0, min: 0 },
+    orderCount: { type: Number, default: 0, min: 0 },
+    purchaseHistory: [purchaseSchema]
   },
   { timestamps: true }
 )

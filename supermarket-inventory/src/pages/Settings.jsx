@@ -71,12 +71,13 @@ export default function Settings() {
       </Card>
 
       <Card>
-        <CardHeader title="Data & Integrations" subtitle="This build uses local demo data" icon={ShieldCheck} />
+        <CardHeader title="Data & Integrations" subtitle="Connected to the StockYard API" icon={ShieldCheck} />
         <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-          StockYard is currently running on in-memory sample data so you can explore the full interface. All add,
-          edit, delete, and stock-adjustment actions work in this session. Connect the backend in the server/ folder
-          to persist data permanently — the codebase is structured so each data source (products, storage, customers,
-          transactions) can be swapped for real API calls independently.
+          StockYard is connected to a live backend (Express + MongoDB). Reading products, storage,
+          customers, and transactions works for everyone; adding, editing, or deleting records requires
+          signing in (top-right). If data isn&rsquo;t loading, confirm the backend server is running and that
+          <code className="text-xs bg-slate-100 dark:bg-ink-700 px-1 py-0.5 rounded mx-1">VITE_API_URL</code>
+          points to it.
         </p>
       </Card>
     </div>

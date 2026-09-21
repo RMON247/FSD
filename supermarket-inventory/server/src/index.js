@@ -9,13 +9,21 @@ import { WebSocketServer } from 'ws'
 import { connectDB } from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
 import productRoutes from './routes/productRoutes.js'
+import storageRoutes from './routes/storageRoutes.js'
+import customerRoutes from './routes/customerRoutes.js'
+import transactionRoutes from './routes/transactionRoutes.js'
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
 
 // ---- Security & parsing middleware (Experiment 5) ----
 app.use(helmet())
-app.use(cors({ origin: (process.env.CORS_ORIGIN || '*').split(',') }))
+// CORS_ORIGIN unset → allow any origin (reflects the request's actual origin).
+// CORS_ORIGIN set → only allow the exact origin(s) listed (comma-separated).
+// Note: passing an array like ['*'] to the cors package does NOT wildcard-match —
+// it only exact-matches, so '*' must be handled as the special "allow all" case here.
+const corsOrigin = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : true
+app.use(cors({ origin: corsOrigin }))
 app.use(express.json({ limit: '100kb' }))
 
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }))
@@ -26,6 +34,9 @@ app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime
 // ---- REST API routes (Experiment 4) ----
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
+app.use('/api/storage', storageRoutes)
+app.use('/api/customers', customerRoutes)
+app.use('/api/transactions', transactionRoutes)
 
 app.use(notFoundHandler)
 app.use(errorHandler)

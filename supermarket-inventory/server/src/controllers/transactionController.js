@@ -2,18 +2,16 @@ import Transaction from '../models/Transaction.js'
 
 export async function listTransactions(req, res, next) {
   try {
-    const transactions = await Transaction.find().sort({ createdAt: -1 })
-    res.json({ count: transactions.length, transactions })
-  } catch (err) {
-    next(err)
-  }
-}
+    const { type, storageId, limit } = req.query
+    const query = {}
+    if (type && type !== 'All') query.type = type
+    if (storageId && storageId !== 'All') query.storageId = storageId
 
-export async function createTransaction(req, res, next) {
-  try {
-    const transaction = await Transaction.create(req.body)
-    req.app.locals.broadcast?.({ type: 'transaction:created', payload: transaction })
-    res.status(201).json({ transaction })
+    const transactions = await Transaction.find(query)
+      .sort({ date: -1 })
+      .limit(limit ? Number(limit) : 200)
+
+    res.json({ count: transactions.length, transactions })
   } catch (err) {
     next(err)
   }

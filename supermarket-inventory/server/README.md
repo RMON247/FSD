@@ -19,6 +19,18 @@ The API + WebSocket server starts on `http://localhost:4000` by default (see `.e
 The frontend (`../`) automatically tries to connect to `ws://localhost:4000` for
 live updates — no extra config needed if you use the default port.
 
+## Populate the database with demo data
+
+A fresh database is empty. To fill it with realistic sample products, storage
+locations, customers, transactions, and a ready-to-use admin login:
+
+```bash
+npm run seed
+```
+
+This creates the admin account **admin@stockyard.com / Password123** — sign in
+with it on the frontend to add, edit, and delete records.
+
 ## Endpoints
 
 | Method | Route                        | Auth           | Description                                  |
@@ -31,8 +43,17 @@ live updates — no extra config needed if you use the default port.
 | GET    | `/api/products/:id`          | —              | Get a single product                         |
 | POST   | `/api/products`              | Bearer token   | Create a product                             |
 | PUT    | `/api/products/:id`          | Bearer token   | Update a product                             |
-| PATCH  | `/api/products/:id/stock`    | Bearer token   | Adjust stock (`direction: "in"|"out"`) — broadcasts over WebSocket |
+| PATCH  | `/api/products/:id/stock`    | Bearer token   | Adjust stock (`direction: "in"|"out"`) — logs a Transaction and broadcasts over WebSocket |
 | DELETE | `/api/products/:id`          | Admin role     | Delete a product                             |
+| GET    | `/api/storage`               | —              | List storage locations                       |
+| POST   | `/api/storage`               | Bearer token   | Create a storage location                    |
+| PUT    | `/api/storage/:id`           | Bearer token   | Update a storage location                    |
+| DELETE | `/api/storage/:id`           | Admin role     | Delete a storage location                    |
+| GET    | `/api/customers`             | —              | List customers                                |
+| POST   | `/api/customers`             | Bearer token   | Create a customer                             |
+| PUT    | `/api/customers/:id`         | Bearer token   | Update a customer                             |
+| DELETE | `/api/customers/:id`         | Admin role     | Delete a customer                             |
+| GET    | `/api/transactions`          | —              | List transactions (supports `?type=&storageId=&limit=`) |
 
 ## Validating the API
 

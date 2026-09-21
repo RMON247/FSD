@@ -1,4 +1,5 @@
 import Product from '../models/Product.js'
+import Transaction from '../models/Transaction.js'
 
 export async function listProducts(req, res, next) {
   try {
@@ -32,6 +33,20 @@ export async function getProduct(req, res, next) {
 export async function createProduct(req, res, next) {
   try {
     const product = await Product.create(req.body)
+
+    if (product.quantity > 0) {
+      await Transaction.create({
+        type: 'Stock In',
+        productId: product._id,
+        productName: product.name,
+        sku: product.sku,
+        quantity: product.quantity,
+        reason: 'New Product Added',
+        storageId: product.storageId,
+        user: req.user?.id ? 'Authenticated User' : 'System'
+      })
+    }
+
     req.app.locals.broadcast?.({ type: 'product:created', payload: product })
     res.status(201).json({ product })
   } catch (err) {
@@ -41,7 +56,10 @@ export async function createProduct(req, res, next) {
 
 export async function updateProduct(req, res, next) {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    })
     if (!product) return res.status(404).json({ message: 'Product not found.' })
     req.app.locals.broadcast?.({ type: 'product:updated', payload: product })
     res.json({ product })
@@ -61,6 +79,10 @@ export async function deleteProduct(req, res, next) {
   }
 }
 
+/**
+ * Stock adjustment — applies a stock-in / stock-out delta, logs a Transaction
+ * record, and broadcasts the update over WebSocket to every connected client.
+ */
 export async function adjustStock(req, res, next) {
   try {
     const { direction, quantity, reason } = req.body
@@ -70,6 +92,17 @@ export async function adjustStock(req, res, next) {
     const delta = direction === 'in' ? quantity : -quantity
     product.quantity = Math.max(0, product.quantity + delta)
     await product.save()
+
+    await Transaction.create({
+      type: direction === 'in' ? 'Stock In' : 'Stock Out',
+      productId: product._id,
+      productName: product.name,
+      sku: product.sku,
+      quantity,
+      reason: reason || (direction === 'in' ? 'Manual Restock' : 'Manual Deduction'),
+      storageId: product.storageId,
+      user: 'Authenticated User'
+    })
 
     req.app.locals.broadcast?.({
       type: 'stock:update',
