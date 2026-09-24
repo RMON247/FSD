@@ -27,7 +27,7 @@ const corsOrigin = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') 
 app.use(cors({ origin: corsOrigin }))
 app.use(express.json({ limit: '100kb' }))
 
-app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false }))
+app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 2, standardHeaders: true, legacyHeaders: false }))
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }))
 
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }))
