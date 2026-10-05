@@ -137,7 +137,7 @@ function InventoryContent() {
         </div>
       </Card>
 
-      <StockAdjustModal open={!!stockProduct} onClose={() => setStockProduct(null)} product={stockProduct} onSubmit={(id, dir, qty, reason) => { adjustStock(id, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`) }} />
+      <StockAdjustModal open={!!stockProduct} onClose={() => setStockProduct(null)} product={stockProduct} onSubmit={async (id, dir, qty, reason) => { await adjustStock(id, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`) }} />
       <ReorderListModal open={reorderOpen} onClose={() => setReorderOpen(false)} />
     </div>
   )

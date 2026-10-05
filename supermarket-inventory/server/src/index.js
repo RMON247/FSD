@@ -15,7 +15,9 @@ import transactionRoutes from './routes/transactionRoutes.js'
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
-app.set('trust proxy', 1)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
 
 // ---- Security & parsing middleware (Experiment 5) ----
 app.use(helmet())
@@ -27,7 +29,15 @@ const corsOrigin = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') 
 app.use(cors({ origin: corsOrigin }))
 app.use(express.json({ limit: '100kb' }))
 
-app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false }))
+// Rate limiting: max 6 requests per 15 minutes by default for demo (4 page load + 2 data entry; 3rd entry gets blocked)
+const maxRequests = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 6
+app.use('/api', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: maxRequests,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
+}))
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }))
 
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }))

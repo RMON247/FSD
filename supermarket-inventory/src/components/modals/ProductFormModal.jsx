@@ -32,7 +32,7 @@ export default function ProductFormModal({ open, onClose, onSubmit, initialData 
     return Object.keys(errs).length === 0
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return
     const payload = {
       ...form,
@@ -41,8 +41,12 @@ export default function ProductFormModal({ open, onClose, onSubmit, initialData 
       minStock: Number(form.minStock),
       sku: form.sku.trim()
     }
-    onSubmit(payload)
-    onClose()
+    try {
+      await onSubmit(payload)
+      onClose()
+    } catch {
+      // Keep modal open so error toast is shown and form state is preserved
+    }
   }
 
   return (

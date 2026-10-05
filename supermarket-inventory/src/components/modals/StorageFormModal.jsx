@@ -31,7 +31,7 @@ export default function StorageFormModal({ open, onClose, onSubmit, initialData 
     return Object.keys(errs).length === 0
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return
     const payload = {
       ...form,
@@ -40,8 +40,12 @@ export default function StorageFormModal({ open, onClose, onSubmit, initialData 
       capacity: Number(form.capacity),
       used: Number(form.used)
     }
-    onSubmit(payload)
-    onClose()
+    try {
+      await onSubmit(payload)
+      onClose()
+    } catch {
+      // Keep modal open on error
+    }
   }
 
   return (

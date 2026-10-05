@@ -31,12 +31,16 @@ export default function StockAdjustModal({ open, onClose, product, onSubmit }) {
     setReason(REASONS[dir][0])
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const qty = Number(quantity)
     if (!qty || qty <= 0) { setError('Enter a quantity greater than zero'); return }
     if (direction === 'out' && qty > product.quantity) { setError(`Only ${product.quantity} ${product.unit} available to remove`); return }
-    onSubmit(product.id, direction, qty, reason)
-    onClose()
+    try {
+      await onSubmit(product.id, direction, qty, reason)
+      onClose()
+    } catch {
+      // Keep modal open on error
+    }
   }
 
   return (

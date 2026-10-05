@@ -26,10 +26,14 @@ export default function CustomerFormModal({ open, onClose, onSubmit, initialData
     return Object.keys(errs).length === 0
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return
-    onSubmit(form)
-    onClose()
+    try {
+      await onSubmit(form)
+      onClose()
+    } catch {
+      // Keep modal open on error
+    }
   }
 
   return (

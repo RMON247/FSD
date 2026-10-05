@@ -26,20 +26,20 @@ export default function Storage() {
     s.id.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     if (editingStorage) {
-      updateStorage(editingStorage.id, data)
+      await updateStorage(editingStorage.id, data)
       addToast(`${data.name} updated successfully`)
     } else {
-      addStorage(data)
+      await addStorage(data)
       addToast(`${data.name} added to warehouse network`)
     }
     setEditingStorage(null)
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteTarget) {
-      deleteStorage(deleteTarget.id)
+      await deleteStorage(deleteTarget.id)
       addToast(`${deleteTarget.name} removed`, 'info')
       setDeleteTarget(null)
     }

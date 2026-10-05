@@ -45,20 +45,20 @@ export default function Products() {
 
   const { page, setPage, totalPages, sortKey, sortDir, onSort, paged, totalItems } = useTableControls(filtered, { pageSize: 8, initialSortKey: 'name' })
 
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     if (editingProduct) {
-      updateProduct(editingProduct.id, data)
+      await updateProduct(editingProduct.id, data)
       addToast(`${data.name} updated successfully`)
     } else {
-      addProduct(data)
+      await addProduct(data)
       addToast(`${data.name} added to catalog`)
     }
     setEditingProduct(null)
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteTarget) {
-      deleteProduct(deleteTarget.id)
+      await deleteProduct(deleteTarget.id)
       addToast(`${deleteTarget.name} deleted`, 'info')
       setDeleteTarget(null)
     }
@@ -118,7 +118,7 @@ export default function Products() {
       </Card>
 
       <ProductFormModal open={formOpen} onClose={() => { setFormOpen(false); setEditingProduct(null) }} onSubmit={handleSubmit} initialData={editingProduct} />
-      <StockAdjustModal open={!!stockProduct} onClose={() => setStockProduct(null)} product={stockProduct} onSubmit={(id, dir, qty, reason) => { adjustStock(id, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`) }} />
+      <StockAdjustModal open={!!stockProduct} onClose={() => setStockProduct(null)} product={stockProduct} onSubmit={async (id, dir, qty, reason) => { await adjustStock(id, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`) }} />
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete product?" message={`This will permanently remove ${deleteTarget?.name} from your catalog and inventory records.`} confirmLabel="Delete Product" />
     </div>
   )

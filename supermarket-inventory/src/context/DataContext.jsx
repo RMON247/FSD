@@ -101,59 +101,73 @@ export function DataProvider({ children }) {
 
   // ---- Products ----
   const addProduct = useCallback(async (data) => {
-    await api('/api/products', { method: 'POST', body: JSON.stringify(data) })
-    await Promise.all([refreshProducts(), refreshTransactions()])
-  }, [api, refreshProducts, refreshTransactions])
+    const res = await api('/api/products', { method: 'POST', body: JSON.stringify(data) })
+    if (res.product) {
+      setProducts((prev) => [normalizeProduct(res.product), ...prev])
+    }
+  }, [api])
 
   const updateProduct = useCallback(async (id, data) => {
-    await api(`/api/products/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-    await refreshProducts()
-  }, [api, refreshProducts])
+    const res = await api(`/api/products/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+    if (res.product) {
+      setProducts((prev) => prev.map((p) => (p.id === id || p._id === id ? normalizeProduct(res.product) : p)))
+    }
+  }, [api])
 
   const deleteProduct = useCallback(async (id) => {
     await api(`/api/products/${id}`, { method: 'DELETE' })
-    await refreshProducts()
-  }, [api, refreshProducts])
+    setProducts((prev) => prev.filter((p) => p.id !== id && p._id !== id))
+  }, [api])
 
   const adjustStock = useCallback(async (productId, direction, quantity, reason) => {
-    await api(`/api/products/${productId}/stock`, {
+    const res = await api(`/api/products/${productId}/stock`, {
       method: 'PATCH',
       body: JSON.stringify({ direction, quantity, reason })
     })
-    await Promise.all([refreshProducts(), refreshTransactions()])
-  }, [api, refreshProducts, refreshTransactions])
+    if (res.product) {
+      setProducts((prev) => prev.map((p) => (p.id === productId || p._id === productId ? normalizeProduct(res.product) : p)))
+    }
+  }, [api])
 
   // ---- Storage ----
   const addStorage = useCallback(async (data) => {
-    await api('/api/storage', { method: 'POST', body: JSON.stringify(data) })
-    await refreshStorage()
-  }, [api, refreshStorage])
+    const res = await api('/api/storage', { method: 'POST', body: JSON.stringify(data) })
+    if (res.location) {
+      setStorageLocations((prev) => [normalizeStorage(res.location), ...prev])
+    }
+  }, [api])
 
   const updateStorage = useCallback(async (id, data) => {
-    await api(`/api/storage/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-    await refreshStorage()
-  }, [api, refreshStorage])
+    const res = await api(`/api/storage/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+    if (res.location) {
+      setStorageLocations((prev) => prev.map((s) => (s.id === id || s._id === id ? normalizeStorage(res.location) : s)))
+    }
+  }, [api])
 
   const deleteStorage = useCallback(async (id) => {
     await api(`/api/storage/${id}`, { method: 'DELETE' })
-    await refreshStorage()
-  }, [api, refreshStorage])
+    setStorageLocations((prev) => prev.filter((s) => s.id !== id && s._id !== id))
+  }, [api])
 
   // ---- Customers ----
   const addCustomer = useCallback(async (data) => {
-    await api('/api/customers', { method: 'POST', body: JSON.stringify(data) })
-    await refreshCustomers()
-  }, [api, refreshCustomers])
+    const res = await api('/api/customers', { method: 'POST', body: JSON.stringify(data) })
+    if (res.customer) {
+      setCustomers((prev) => [normalizeCustomer(res.customer), ...prev])
+    }
+  }, [api])
 
   const updateCustomer = useCallback(async (id, data) => {
-    await api(`/api/customers/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-    await refreshCustomers()
-  }, [api, refreshCustomers])
+    const res = await api(`/api/customers/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+    if (res.customer) {
+      setCustomers((prev) => prev.map((c) => (c.id === id || c._id === id ? normalizeCustomer(res.customer) : c)))
+    }
+  }, [api])
 
   const deleteCustomer = useCallback(async (id) => {
     await api(`/api/customers/${id}`, { method: 'DELETE' })
-    await refreshCustomers()
-  }, [api, refreshCustomers])
+    setCustomers((prev) => prev.filter((c) => c.id !== id && c._id !== id))
+  }, [api])
 
   // Wrap every mutator so a failed request surfaces as a toast instead of an
   // unhandled promise rejection, while still letting callers await it if they want.

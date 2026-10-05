@@ -109,9 +109,9 @@ export default function ProductDetail() {
         </Card>
       </div>
 
-      <ProductFormModal open={formOpen} onClose={() => setFormOpen(false)} onSubmit={(data) => { updateProduct(product.id, data); addToast(`${data.name} updated successfully`) }} initialData={product} />
-      <StockAdjustModal open={stockOpen} onClose={() => setStockOpen(false)} product={product} onSubmit={(pid, dir, qty, reason) => { adjustStock(pid, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${product.unit} ${dir === 'in' ? 'to' : 'from'} ${product.name}`) }} />
-      <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={() => { deleteProduct(product.id); addToast(`${product.name} deleted`, 'info'); navigate('/products') }} title="Delete product?" message={`This will permanently remove ${product.name} from your catalog and inventory records.`} confirmLabel="Delete Product" />
+      <ProductFormModal open={formOpen} onClose={() => setFormOpen(false)} onSubmit={async (data) => { await updateProduct(product.id, data); addToast(`${data.name} updated successfully`) }} initialData={product} />
+      <StockAdjustModal open={stockOpen} onClose={() => setStockOpen(false)} product={product} onSubmit={async (pid, dir, qty, reason) => { await adjustStock(pid, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${product.unit} ${dir === 'in' ? 'to' : 'from'} ${product.name}`) }} />
+      <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={async () => { await deleteProduct(product.id); addToast(`${product.name} deleted`, 'info'); navigate('/products') }} title="Delete product?" message={`This will permanently remove ${product.name} from your catalog and inventory records.`} confirmLabel="Delete Product" />
     </div>
   )
 }

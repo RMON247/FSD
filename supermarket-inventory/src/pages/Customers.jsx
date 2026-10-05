@@ -41,20 +41,20 @@ export default function Customers() {
 
   const { page, setPage, totalPages, sortKey, sortDir, onSort, paged, totalItems } = useTableControls(filtered, { pageSize: 8, initialSortKey: 'name' })
 
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     if (editingCustomer) {
-      updateCustomer(editingCustomer.id, data)
+      await updateCustomer(editingCustomer.id, data)
       addToast(`${data.name} updated successfully`)
     } else {
-      addCustomer(data)
+      await addCustomer(data)
       addToast(`${data.name} added as a new customer`)
     }
     setEditingCustomer(null)
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteTarget) {
-      deleteCustomer(deleteTarget.id)
+      await deleteCustomer(deleteTarget.id)
       addToast(`${deleteTarget.name} removed`, 'info')
       setDeleteTarget(null)
     }
