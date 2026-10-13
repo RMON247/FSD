@@ -30,7 +30,7 @@ app.use(cors({ origin: corsOrigin }))
 app.use(express.json({ limit: '100kb' }))
 
 // Rate limiting: max 6 requests per 15 minutes by default for demo (4 page load + 2 data entry; 3rd entry gets blocked)
-const maxRequests = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 6
+const maxRequests = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 300
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: maxRequests,
