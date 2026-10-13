@@ -38,7 +38,7 @@ app.use('/api', rateLimit({
   legacyHeaders: false,
   message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
 }))
-app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }))
+app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 50 }))
 
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }))
 
