@@ -38,8 +38,8 @@ app.use(cors({
 }))
 app.use(express.json({ limit: '100kb' }))
 
-// Rate limiting: allow ample headroom for multi-user real-time work
-const maxRequests = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 2000
+// Rate limiting: allow ample headroom for multi-user real-time work (default 300)
+const maxRequests = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 300
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: maxRequests,
@@ -47,7 +47,7 @@ app.use('/api', rateLimit({
   legacyHeaders: false,
   message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
 }))
-app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
+app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 50 }))
 
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }))
 
