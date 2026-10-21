@@ -34,7 +34,7 @@ export default function ProductDetail() {
 
   const storage = storageLocations.find((s) => s.id === product.storageId)
   const supplier = suppliers.find((s) => s.id === product.supplierId)
-  const history = transactions.filter((t) => t.productId === product.id).slice(0, 10)
+  const history = transactions.filter((t) => String(t.productId) === String(product.id) || String(t.productId) === String(product._id)).slice(0, 10)
 
   return (
     <div className="space-y-5">

@@ -107,7 +107,12 @@ export default function Customers() {
       </Card>
 
       <CustomerFormModal open={formOpen} onClose={() => { setFormOpen(false); setEditingCustomer(null) }} onSubmit={handleSubmit} initialData={editingCustomer} />
-      <CustomerViewModal open={!!viewingCustomer} onClose={() => setViewingCustomer(null)} customer={viewingCustomer} onEdit={(c) => { setEditingCustomer(c); setFormOpen(true) }} />
+      <CustomerViewModal
+        open={!!viewingCustomer}
+        onClose={() => setViewingCustomer(null)}
+        customer={viewingCustomer ? customers.find((c) => c.id === viewingCustomer.id || c._id === viewingCustomer.id) || viewingCustomer : null}
+        onEdit={(c) => { setEditingCustomer(c); setFormOpen(true) }}
+      />
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete customer?" message={`This will permanently remove ${deleteTarget?.name} and their purchase history.`} confirmLabel="Delete Customer" />
     </div>
   )

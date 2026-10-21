@@ -2,9 +2,11 @@ import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 
 function signToken(user) {
-  return jwt.sign({ sub: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d'
-  })
+  return jwt.sign(
+    { sub: user._id, role: user.role, name: user.name, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+  )
 }
 
 export async function register(req, res, next) {

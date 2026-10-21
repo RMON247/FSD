@@ -104,7 +104,13 @@ export default function Storage() {
       )}
 
       <StorageFormModal open={formOpen} onClose={() => { setFormOpen(false); setEditingStorage(null) }} onSubmit={handleSubmit} initialData={editingStorage} />
-      <StorageViewModal open={!!viewingStorage} onClose={() => setViewingStorage(null)} storage={viewingStorage} productsInStorage={viewingStorage ? products.filter((p) => p.storageId === viewingStorage.id) : []} onEdit={(s) => { setEditingStorage(s); setFormOpen(true) }} />
+      <StorageViewModal
+        open={!!viewingStorage}
+        onClose={() => setViewingStorage(null)}
+        storage={viewingStorage ? storageLocations.find((s) => s.id === viewingStorage.id || s._id === viewingStorage.id) || viewingStorage : null}
+        productsInStorage={viewingStorage ? products.filter((p) => p.storageId === viewingStorage.id || p.storageId === viewingStorage._id) : []}
+        onEdit={(s) => { setEditingStorage(s); setFormOpen(true) }}
+      />
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete storage location?" message={`This will permanently remove ${deleteTarget?.name} from your warehouse network. This action cannot be undone.`} confirmLabel="Delete Location" />
     </div>
   )

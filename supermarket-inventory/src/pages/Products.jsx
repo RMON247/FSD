@@ -118,7 +118,15 @@ export default function Products() {
       </Card>
 
       <ProductFormModal open={formOpen} onClose={() => { setFormOpen(false); setEditingProduct(null) }} onSubmit={handleSubmit} initialData={editingProduct} />
-      <StockAdjustModal open={!!stockProduct} onClose={() => setStockProduct(null)} product={stockProduct} onSubmit={async (id, dir, qty, reason) => { await adjustStock(id, dir, qty, reason); addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`) }} />
+      <StockAdjustModal
+        open={!!stockProduct}
+        onClose={() => setStockProduct(null)}
+        product={stockProduct ? products.find((p) => p.id === stockProduct.id || p._id === stockProduct.id) || stockProduct : null}
+        onSubmit={async (id, dir, qty, reason) => {
+          await adjustStock(id, dir, qty, reason)
+          addToast(`${dir === 'in' ? 'Added' : 'Removed'} ${qty} ${stockProduct.unit} ${dir === 'in' ? 'to' : 'from'} ${stockProduct.name}`)
+        }}
+      />
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete product?" message={`This will permanently remove ${deleteTarget?.name} from your catalog and inventory records.`} confirmLabel="Delete Product" />
     </div>
   )

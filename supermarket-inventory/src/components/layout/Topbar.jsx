@@ -20,7 +20,7 @@ const PAGE_META = {
 export default function Topbar({ onMenuClick, pathname }) {
   const { theme, toggleTheme } = useTheme()
   const { products } = useData()
-  const { connected } = useRealtime()
+  const { connected, activeUsers } = useRealtime()
   const { isAuthenticated, user, logout } = useAuth()
   const [query, setQuery] = useState('')
   const [showResults, setShowResults] = useState(false)
@@ -89,11 +89,27 @@ export default function Topbar({ onMenuClick, pathname }) {
 
       <div className="flex items-center gap-1.5 shrink-0">
         <span
-          title={connected ? 'Live sync connected to backend' : 'Backend offline — working from local data'}
-          className={`hidden sm:flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-lg ${connected ? 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400' : 'bg-slate-100 text-slate-500 dark:bg-ink-700 dark:text-slate-400'}`}
+          title={connected ? `Real-time WebSocket sync active (${activeUsers} user${activeUsers === 1 ? '' : 's'} connected)` : 'Backend offline — working from local data'}
+          className={`hidden sm:flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
+            connected
+              ? 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400 border border-teal-200/50 dark:border-teal-500/20'
+              : 'bg-slate-100 text-slate-500 dark:bg-ink-700 dark:text-slate-400'
+          }`}
         >
-          {connected ? <Wifi size={13} /> : <WifiOff size={13} />}
-          {connected ? 'Live' : 'Offline'}
+          {connected ? (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+              </span>
+              <span>{activeUsers > 1 ? `Live · ${activeUsers} online` : 'Live'}</span>
+            </>
+          ) : (
+            <>
+              <WifiOff size={13} />
+              <span>Offline</span>
+            </>
+          )}
         </span>
         <button
           onClick={toggleTheme}

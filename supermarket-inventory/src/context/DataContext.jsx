@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState, useCallback, useEffect } from 'react'
 import { useAuth, API_URL } from './AuthContext.jsx'
 import { useToast } from './ToastContext.jsx'
+import { useRealtime } from './RealtimeContext.jsx'
 import { categories, suppliers } from '../data/dummyData.js'
 
 const DataContext = createContext(null)
@@ -21,12 +22,19 @@ function normalizeCustomer(c) {
   }
 }
 function normalizeTransaction(t) {
-  return { ...t, id: t.id || t._id }
+  return {
+    ...t,
+    id: t.id || t._id,
+    productId: typeof t.productId === 'object' && t.productId !== null
+      ? (t.productId._id || t.productId.id || String(t.productId))
+      : String(t.productId)
+  }
 }
 
 export function DataProvider({ children }) {
   const { authHeader } = useAuth()
   const { addToast } = useToast()
+  const { subscribe, clientId } = useRealtime()
 
   const [products, setProducts] = useState([])
   const [storageLocations, setStorageLocations] = useState([])
@@ -40,6 +48,7 @@ export function DataProvider({ children }) {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        'X-Client-Id': clientId,
         ...authHeader,
         ...(options.headers || {})
       }
@@ -55,7 +64,7 @@ export function DataProvider({ children }) {
       throw new Error(errorMsg)
     }
     return data
-  }, [authHeader])
+  }, [authHeader, clientId])
 
   const refreshProducts = useCallback(async () => {
     const data = await api('/api/products')
@@ -99,18 +108,198 @@ export function DataProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Real-time synchronization over WebSocket
+  useEffect(() => {
+    if (!subscribe) return
+
+    const unsubscribe = subscribe((event) => {
+      if (!event || !event.type) return
+      const isRemote = event.clientId !== clientId
+      const actor = event.actor || 'A team member'
+
+      switch (event.type) {
+        case 'product:created': {
+          if (!event.payload) break
+          const p = normalizeProduct(event.payload)
+          setProducts((prev) => {
+            if (prev.some((item) => item.id === p.id || item._id === p.id)) {
+              return prev.map((item) => (item.id === p.id || item._id === p.id ? p : item))
+            }
+            return [p, ...prev]
+          })
+          if (isRemote) {
+            addToast(`${actor} added product "${p.name}"`, 'info')
+          }
+          break
+        }
+
+        case 'product:updated': {
+          if (!event.payload) break
+          const p = normalizeProduct(event.payload)
+          setProducts((prev) =>
+            prev.map((item) => (item.id === p.id || item._id === p.id ? { ...item, ...p } : item))
+          )
+          if (isRemote) {
+            addToast(`${actor} updated product "${p.name}"`, 'info')
+          }
+          break
+        }
+
+        case 'stock:update': {
+          const { id, product, name, quantity, direction, reason } = event.payload || {}
+          if (product) {
+            const p = normalizeProduct(product)
+            setProducts((prev) =>
+              prev.map((item) => (item.id === p.id || item._id === p.id ? p : item))
+            )
+          } else if (id) {
+            const delta = direction === 'in' ? quantity : -quantity
+            setProducts((prev) =>
+              prev.map((item) => {
+                if (item.id === id || item._id === id) {
+                  const newQty = Math.max(0, item.quantity + delta)
+                  const newStatus = newQty === 0 ? 'Out of Stock' : newQty <= item.minStock ? 'Low Stock' : 'In Stock'
+                  const newValue = Number((item.price * newQty).toFixed(2))
+                  return { ...item, quantity: newQty, status: newStatus, value: newValue }
+                }
+                return item
+              })
+            )
+          }
+          if (isRemote) {
+            addToast(`${actor} adjusted stock for "${name || 'Product'}": ${direction === 'in' ? '+' : '-'}${quantity} units (${reason || 'Stock Update'})`, 'info')
+          }
+          break
+        }
+
+        case 'product:deleted': {
+          const targetId = event.payload?.id
+          const name = event.payload?.name
+          if (targetId) {
+            setProducts((prev) => prev.filter((item) => item.id !== targetId && item._id !== targetId))
+            if (isRemote) {
+              addToast(`${actor} deleted product ${name ? `"${name}"` : ''}`, 'info')
+            }
+          }
+          break
+        }
+
+        case 'storage:created': {
+          if (!event.payload) break
+          const s = normalizeStorage(event.payload)
+          setStorageLocations((prev) => {
+            if (prev.some((item) => item.id === s.id || item._id === s.id)) {
+              return prev.map((item) => (item.id === s.id || item._id === s.id ? s : item))
+            }
+            return [s, ...prev]
+          })
+          if (isRemote) {
+            addToast(`${actor} added storage location "${s.name}"`, 'info')
+          }
+          break
+        }
+
+        case 'storage:updated': {
+          if (!event.payload) break
+          const s = normalizeStorage(event.payload)
+          setStorageLocations((prev) =>
+            prev.map((item) => (item.id === s.id || item._id === s.id ? { ...item, ...s } : item))
+          )
+          if (isRemote) {
+            addToast(`${actor} updated storage location "${s.name}"`, 'info')
+          }
+          break
+        }
+
+        case 'storage:deleted': {
+          const targetId = event.payload?.id
+          const name = event.payload?.name
+          if (targetId) {
+            setStorageLocations((prev) => prev.filter((item) => item.id !== targetId && item._id !== targetId))
+            if (isRemote) {
+              addToast(`${actor} deleted storage location ${name ? `"${name}"` : ''}`, 'info')
+            }
+          }
+          break
+        }
+
+        case 'customer:created': {
+          if (!event.payload) break
+          const c = normalizeCustomer(event.payload)
+          setCustomers((prev) => {
+            if (prev.some((item) => item.id === c.id || item._id === c.id)) {
+              return prev.map((item) => (item.id === c.id || item._id === c.id ? c : item))
+            }
+            return [c, ...prev]
+          })
+          if (isRemote) {
+            addToast(`${actor} registered customer "${c.name}"`, 'info')
+          }
+          break
+        }
+
+        case 'customer:updated': {
+          if (!event.payload) break
+          const c = normalizeCustomer(event.payload)
+          setCustomers((prev) =>
+            prev.map((item) => (item.id === c.id || item._id === c.id ? { ...item, ...c } : item))
+          )
+          if (isRemote) {
+            addToast(`${actor} updated customer "${c.name}"`, 'info')
+          }
+          break
+        }
+
+        case 'customer:deleted': {
+          const targetId = event.payload?.id
+          const name = event.payload?.name
+          if (targetId) {
+            setCustomers((prev) => prev.filter((item) => item.id !== targetId && item._id !== targetId))
+            if (isRemote) {
+              addToast(`${actor} removed customer ${name ? `"${name}"` : ''}`, 'info')
+            }
+          }
+          break
+        }
+
+        case 'transaction:created': {
+          if (!event.payload) break
+          const t = normalizeTransaction(event.payload)
+          setTransactions((prev) => {
+            if (prev.some((item) => item.id === t.id || item._id === t.id)) {
+              return prev
+            }
+            return [t, ...prev]
+          })
+          break
+        }
+
+        default:
+          break
+      }
+    })
+
+    return unsubscribe
+  }, [subscribe, clientId, addToast])
+
   // ---- Products ----
   const addProduct = useCallback(async (data) => {
     const res = await api('/api/products', { method: 'POST', body: JSON.stringify(data) })
     if (res.product) {
-      setProducts((prev) => [normalizeProduct(res.product), ...prev])
+      const p = normalizeProduct(res.product)
+      setProducts((prev) => (prev.some((item) => item.id === p.id || item._id === p.id) ? prev : [p, ...prev]))
+    }
+    if (res.transaction) {
+      const t = normalizeTransaction(res.transaction)
+      setTransactions((prev) => (prev.some((item) => item.id === t.id || item._id === t.id) ? prev : [t, ...prev]))
     }
   }, [api])
 
   const updateProduct = useCallback(async (id, data) => {
     const res = await api(`/api/products/${id}`, { method: 'PUT', body: JSON.stringify(data) })
     if (res.product) {
-      setProducts((prev) => prev.map((p) => (p.id === id || p._id === id ? normalizeProduct(res.product) : p)))
+      const p = normalizeProduct(res.product)
+      setProducts((prev) => prev.map((item) => (item.id === id || item._id === id ? p : item)))
     }
   }, [api])
 
@@ -125,7 +314,12 @@ export function DataProvider({ children }) {
       body: JSON.stringify({ direction, quantity, reason })
     })
     if (res.product) {
-      setProducts((prev) => prev.map((p) => (p.id === productId || p._id === productId ? normalizeProduct(res.product) : p)))
+      const p = normalizeProduct(res.product)
+      setProducts((prev) => prev.map((item) => (item.id === productId || item._id === productId ? p : item)))
+    }
+    if (res.transaction) {
+      const t = normalizeTransaction(res.transaction)
+      setTransactions((prev) => (prev.some((item) => item.id === t.id || item._id === t.id) ? prev : [t, ...prev]))
     }
   }, [api])
 
@@ -133,14 +327,16 @@ export function DataProvider({ children }) {
   const addStorage = useCallback(async (data) => {
     const res = await api('/api/storage', { method: 'POST', body: JSON.stringify(data) })
     if (res.location) {
-      setStorageLocations((prev) => [normalizeStorage(res.location), ...prev])
+      const s = normalizeStorage(res.location)
+      setStorageLocations((prev) => (prev.some((item) => item.id === s.id || item._id === s.id) ? prev : [s, ...prev]))
     }
   }, [api])
 
   const updateStorage = useCallback(async (id, data) => {
     const res = await api(`/api/storage/${id}`, { method: 'PUT', body: JSON.stringify(data) })
     if (res.location) {
-      setStorageLocations((prev) => prev.map((s) => (s.id === id || s._id === id ? normalizeStorage(res.location) : s)))
+      const s = normalizeStorage(res.location)
+      setStorageLocations((prev) => prev.map((item) => (item.id === id || item._id === id ? s : item)))
     }
   }, [api])
 
@@ -153,14 +349,16 @@ export function DataProvider({ children }) {
   const addCustomer = useCallback(async (data) => {
     const res = await api('/api/customers', { method: 'POST', body: JSON.stringify(data) })
     if (res.customer) {
-      setCustomers((prev) => [normalizeCustomer(res.customer), ...prev])
+      const c = normalizeCustomer(res.customer)
+      setCustomers((prev) => (prev.some((item) => item.id === c.id || item._id === c.id) ? prev : [c, ...prev]))
     }
   }, [api])
 
   const updateCustomer = useCallback(async (id, data) => {
     const res = await api(`/api/customers/${id}`, { method: 'PUT', body: JSON.stringify(data) })
     if (res.customer) {
-      setCustomers((prev) => prev.map((c) => (c.id === id || c._id === id ? normalizeCustomer(res.customer) : c)))
+      const c = normalizeCustomer(res.customer)
+      setCustomers((prev) => prev.map((item) => (item.id === id || item._id === id ? c : item)))
     }
   }, [api])
 

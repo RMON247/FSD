@@ -22,7 +22,15 @@ export async function getCustomer(req, res, next) {
 export async function createCustomer(req, res, next) {
   try {
     const customer = await Customer.create(req.body)
-    req.app.locals.broadcast?.({ type: 'customer:created', payload: customer })
+    const clientId = req.headers['x-client-id']
+    const actor = req.user?.name || 'A team member'
+
+    req.app.locals.broadcast?.({
+      type: 'customer:created',
+      payload: customer,
+      actor,
+      clientId
+    })
     res.status(201).json({ customer })
   } catch (err) {
     next(err)
@@ -33,7 +41,16 @@ export async function updateCustomer(req, res, next) {
   try {
     const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
     if (!customer) return res.status(404).json({ message: 'Customer not found.' })
-    req.app.locals.broadcast?.({ type: 'customer:updated', payload: customer })
+
+    const clientId = req.headers['x-client-id']
+    const actor = req.user?.name || 'A team member'
+
+    req.app.locals.broadcast?.({
+      type: 'customer:updated',
+      payload: customer,
+      actor,
+      clientId
+    })
     res.json({ customer })
   } catch (err) {
     next(err)
@@ -44,7 +61,16 @@ export async function deleteCustomer(req, res, next) {
   try {
     const customer = await Customer.findByIdAndDelete(req.params.id)
     if (!customer) return res.status(404).json({ message: 'Customer not found.' })
-    req.app.locals.broadcast?.({ type: 'customer:deleted', payload: { id: customer._id } })
+
+    const clientId = req.headers['x-client-id']
+    const actor = req.user?.name || 'A team member'
+
+    req.app.locals.broadcast?.({
+      type: 'customer:deleted',
+      payload: { id: customer._id, name: customer.name },
+      actor,
+      clientId
+    })
     res.json({ message: 'Customer deleted.' })
   } catch (err) {
     next(err)

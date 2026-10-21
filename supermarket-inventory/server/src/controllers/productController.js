@@ -41,9 +41,12 @@ export async function createProduct(req, res, next) {
     }
 
     const product = await Product.create(payload)
+    const clientId = req.headers['x-client-id']
+    const actor = req.user?.name || 'A team member'
 
+    let tx = null
     if (product.quantity > 0) {
-      await Transaction.create({
+      tx = await Transaction.create({
         type: 'Stock In',
         productId: product._id,
         productName: product.name,
@@ -51,12 +54,27 @@ export async function createProduct(req, res, next) {
         quantity: product.quantity,
         reason: 'New Product Added',
         storageId: product.storageId,
-        user: req.user?.id ? 'Authenticated User' : 'System'
+        user: actor
       })
     }
 
-    req.app.locals.broadcast?.({ type: 'product:created', payload: product })
-    res.status(201).json({ product })
+    req.app.locals.broadcast?.({
+      type: 'product:created',
+      payload: product,
+      actor,
+      clientId
+    })
+
+    if (tx) {
+      req.app.locals.broadcast?.({
+        type: 'transaction:created',
+        payload: tx,
+        actor,
+        clientId
+      })
+    }
+
+    res.status(201).json({ product, transaction: tx })
   } catch (err) {
     next(err)
   }
@@ -76,7 +94,17 @@ export async function updateProduct(req, res, next) {
       runValidators: true
     })
     if (!product) return res.status(404).json({ message: 'Product not found.' })
-    req.app.locals.broadcast?.({ type: 'product:updated', payload: product })
+
+    const clientId = req.headers['x-client-id']
+    const actor = req.user?.name || 'A team member'
+
+    req.app.locals.broadcast?.({
+      type: 'product:updated',
+      payload: product,
+      actor,
+      clientId
+    })
+
     res.json({ product })
   } catch (err) {
     next(err)
@@ -87,7 +115,17 @@ export async function deleteProduct(req, res, next) {
   try {
     const product = await Product.findByIdAndDelete(req.params.id)
     if (!product) return res.status(404).json({ message: 'Product not found.' })
-    req.app.locals.broadcast?.({ type: 'product:deleted', payload: { id: product._id } })
+
+    const clientId = req.headers['x-client-id']
+    const actor = req.user?.name || 'A team member'
+
+    req.app.locals.broadcast?.({
+      type: 'product:deleted',
+      payload: { id: product._id, name: product.name },
+      actor,
+      clientId
+    })
+
     res.json({ message: 'Product deleted.' })
   } catch (err) {
     next(err)
@@ -108,7 +146,10 @@ export async function adjustStock(req, res, next) {
     product.quantity = Math.max(0, product.quantity + delta)
     await product.save()
 
-    await Transaction.create({
+    const clientId = req.headers['x-client-id']
+    const actor = req.user?.name || 'A team member'
+
+    const tx = await Transaction.create({
       type: direction === 'in' ? 'Stock In' : 'Stock Out',
       productId: product._id,
       productName: product.name,
@@ -116,15 +157,38 @@ export async function adjustStock(req, res, next) {
       quantity,
       reason: reason || (direction === 'in' ? 'Manual Restock' : 'Manual Deduction'),
       storageId: product.storageId,
-      user: 'Authenticated User'
+      user: actor
+    })
+
+    req.app.locals.broadcast?.({
+      type: 'product:updated',
+      payload: product,
+      actor,
+      clientId
     })
 
     req.app.locals.broadcast?.({
       type: 'stock:update',
-      payload: { id: product._id, name: product.name, quantity: product.quantity, direction, reason }
+      payload: {
+        id: product._id,
+        product,
+        name: product.name,
+        quantity: product.quantity,
+        direction,
+        reason: tx.reason
+      },
+      actor,
+      clientId
     })
 
-    res.json({ product })
+    req.app.locals.broadcast?.({
+      type: 'transaction:created',
+      payload: tx,
+      actor,
+      clientId
+    })
+
+    res.json({ product, transaction: tx })
   } catch (err) {
     next(err)
   }

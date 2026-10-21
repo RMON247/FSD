@@ -15,11 +15,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <ThemeProvider>
         <ToastProvider>
           <AuthProvider>
-            <DataProvider>
-              <RealtimeProvider>
+            <RealtimeProvider>
+              <DataProvider>
                 <App />
-              </RealtimeProvider>
-            </DataProvider>
+              </DataProvider>
+            </RealtimeProvider>
           </AuthProvider>
         </ToastProvider>
       </ThemeProvider>
