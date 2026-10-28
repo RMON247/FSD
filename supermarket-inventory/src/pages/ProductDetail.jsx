@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Pencil, Trash2, PackagePlus, Tag, Warehouse, Truck, Boxes } from 'lucide-react'
 import { useData } from '../context/DataContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import Card, { CardHeader } from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Badge from '../components/ui/Badge.jsx'
@@ -17,6 +18,7 @@ export default function ProductDetail() {
   const navigate = useNavigate()
   const { products, storageLocations, suppliers, transactions, updateProduct, deleteProduct, adjustStock } = useData()
   const { addToast } = useToast()
+  const { canWrite, isAdmin } = useAuth()
 
   const [formOpen, setFormOpen] = useState(false)
   const [stockOpen, setStockOpen] = useState(false)
@@ -85,11 +87,19 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 mt-6 pt-5 border-t border-slate-100 dark:border-ink-700">
-            <Button className="flex-1" icon={PackagePlus} onClick={() => setStockOpen(true)}>Adjust Stock</Button>
-            <Button variant="secondary" icon={Pencil} onClick={() => setFormOpen(true)} />
-            <Button variant="danger" icon={Trash2} onClick={() => setDeleteOpen(true)} />
-          </div>
+          {canWrite ? (
+            <div className="flex items-center gap-2 mt-6 pt-5 border-t border-slate-100 dark:border-ink-700">
+              <Button className="flex-1" icon={PackagePlus} onClick={() => setStockOpen(true)}>Adjust Stock</Button>
+              <Button variant="secondary" icon={Pencil} onClick={() => setFormOpen(true)} />
+              {isAdmin && (
+                <Button variant="danger" icon={Trash2} onClick={() => setDeleteOpen(true)} />
+              )}
+            </div>
+          ) : (
+            <div className="mt-6 pt-5 border-t border-slate-100 dark:border-ink-700 text-xs text-slate-400 text-center">
+              Read-only view &middot; Administrator or Manager access required to edit.
+            </div>
+          )}
         </Card>
 
         <Card padded={false} className="flex-1 pt-5">

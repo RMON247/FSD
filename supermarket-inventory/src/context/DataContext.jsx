@@ -32,7 +32,7 @@ function normalizeTransaction(t) {
 }
 
 export function DataProvider({ children }) {
-  const { authHeader } = useAuth()
+  const { authHeader, user, setUser } = useAuth()
   const { addToast } = useToast()
   const { subscribe, clientId } = useRealtime()
 
@@ -86,9 +86,20 @@ export function DataProvider({ children }) {
     setTransactions((data.transactions || []).map(normalizeTransaction))
   }, [api])
 
-  // useEffect: load everything from the database once, on mount
+  // Load everything from the database once authenticated and verified
   useEffect(() => {
     let cancelled = false
+
+    if (!user || !user.isVerified) {
+      setProducts([])
+      setStorageLocations([])
+      setCustomers([])
+      setTransactions([])
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     async function loadAll() {
       setLoading(true)
       setError(null)
@@ -105,8 +116,7 @@ export function DataProvider({ children }) {
     }
     loadAll()
     return () => { cancelled = true }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [user?.isVerified, user?.id, refreshProducts, refreshStorage, refreshCustomers, refreshTransactions, addToast])
 
   // Real-time synchronization over WebSocket
   useEffect(() => {
@@ -274,13 +284,39 @@ export function DataProvider({ children }) {
           break
         }
 
+        case 'user:authorized':
+        case 'user:role_updated': {
+          const { id, role, isVerified, user: updatedUser } = event.payload || {}
+          if (id && user && (user.id === id || user._id === id)) {
+            setUser((prev) => {
+              if (!prev) return prev
+              return {
+                ...prev,
+                ...(role ? { role } : {}),
+                ...(isVerified !== undefined ? { isVerified } : {}),
+                ...(updatedUser || {})
+              }
+            })
+            if (isVerified && !user.isVerified) {
+              addToast('Your account was verified by an administrator! Database access unlocked.', 'success')
+            } else if (role === 'admin') {
+              addToast('Your permissions have been upgraded to Administrator!', 'success')
+            } else if (role === 'manager') {
+              addToast('An administrator has granted you Write & Edit access!', 'success')
+            } else if (role === 'viewer') {
+              addToast('Your permissions were changed to Viewer (Read-only).', 'info')
+            }
+          }
+          break
+        }
+
         default:
           break
       }
     })
 
     return unsubscribe
-  }, [subscribe, clientId, addToast])
+  }, [subscribe, clientId, addToast, user, setUser])
 
   // ---- Products ----
   const addProduct = useCallback(async (data) => {

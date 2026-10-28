@@ -40,11 +40,50 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [setToken, setUser])
 
+  const refreshUser = useCallback(async () => {
+    if (!token) return null
+    try {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.user) {
+          setUser(data.user)
+          return data.user
+        }
+      } else if (res.status === 401) {
+        logout()
+      }
+    } catch {
+      // ignore network errors
+    }
+    return null
+  }, [token, setUser, logout])
+
   const authHeader = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token])
 
+  const isVerified = Boolean(user?.isVerified)
+  const isAdmin = user?.role === 'admin' && isVerified
+  const canWrite = (user?.role === 'admin' || user?.role === 'manager') && isVerified
+  const isViewer = user?.role === 'viewer'
+
   const value = useMemo(() => ({
-    token, user, isAuthenticated: !!token, login, register, logout, authHeader
-  }), [token, user, login, register, logout, authHeader])
+    token,
+    user,
+    setUser,
+    isAuthenticated: !!token && !!user,
+    isVerified,
+    isAdmin,
+    canWrite,
+    isViewer,
+    role: user?.role || 'guest',
+    login,
+    register,
+    logout,
+    refreshUser,
+    authHeader
+  }), [token, user, setUser, isVerified, isAdmin, canWrite, isViewer, login, register, logout, refreshUser, authHeader])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

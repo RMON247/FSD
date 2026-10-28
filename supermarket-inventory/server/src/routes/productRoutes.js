@@ -3,17 +3,20 @@ import { body, param } from 'express-validator'
 import {
   listProducts, getProduct, createProduct, updateProduct, deleteProduct, adjustStock
 } from '../controllers/productController.js'
-import { requireAuth, requireRole } from '../middleware/auth.js'
+import { requireAuth, requireVerified, requireRole } from '../middleware/auth.js'
 import { validate } from '../utils/validate.js'
 
 const router = Router()
+
+// All product database access requires an authenticated & admin-verified account
+router.use(requireAuth, requireVerified)
 
 router.get('/', listProducts)
 router.get('/:id', param('id').isMongoId(), validate, getProduct)
 
 router.post(
   '/',
-  requireAuth,
+  requireRole('admin', 'manager'),
   [
     body('name').trim().notEmpty().withMessage('Product name is required'),
     body('sku').optional({ checkFalsy: true }).trim(),
@@ -26,11 +29,11 @@ router.post(
   createProduct
 )
 
-router.put('/:id', requireAuth, param('id').isMongoId(), validate, updateProduct)
+router.put('/:id', requireRole('admin', 'manager'), param('id').isMongoId(), validate, updateProduct)
 
 router.patch(
   '/:id/stock',
-  requireAuth,
+  requireRole('admin', 'manager'),
   [
     param('id').isMongoId(),
     body('direction').isIn(['in', 'out']),
@@ -40,6 +43,6 @@ router.patch(
   adjustStock
 )
 
-router.delete('/:id', requireAuth, requireRole('admin'), param('id').isMongoId(), validate, deleteProduct)
+router.delete('/:id', requireRole('admin'), param('id').isMongoId(), validate, deleteProduct)
 
 export default router

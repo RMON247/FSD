@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Plus, Search, Eye, Pencil, Trash2, Users } from 'lucide-react'
+import { Plus, Search, Eye, Pencil, Trash2, Users, Shield } from 'lucide-react'
 import { useData } from '../context/DataContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Badge from '../components/ui/Badge.jsx'
@@ -26,6 +27,7 @@ const COLUMNS = [
 export default function Customers() {
   const { customers, addCustomer, updateCustomer, deleteCustomer } = useData()
   const { addToast } = useToast()
+  const { canWrite, isAdmin } = useAuth()
 
   const [search, setSearch] = useState('')
   const [formOpen, setFormOpen] = useState(false)
@@ -62,18 +64,27 @@ export default function Customers() {
 
   return (
     <div className="space-y-5">
+      {!canWrite && (
+        <div className="flex items-center gap-2.5 text-xs bg-slate-100 dark:bg-ink-800 border border-slate-200 dark:border-ink-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl">
+          <Shield size={15} className="text-brand-500 shrink-0" />
+          <span><strong>Read-Only Mode:</strong> Only administrators or users granted write access can register, edit, or remove customer profiles. Ask an administrator to grant you access.</span>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative w-full sm:w-72">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search customers…" className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
         </div>
-        <Button icon={Plus} onClick={() => { setEditingCustomer(null); setFormOpen(true) }}>Add Customer</Button>
+        {canWrite && (
+          <Button icon={Plus} onClick={() => { setEditingCustomer(null); setFormOpen(true) }}>Add Customer</Button>
+        )}
       </div>
 
       <Card padded={false} className="pt-5">
         <div className="px-5">
           {paged.length === 0 ? (
-            <EmptyState icon={Users} title="No customers found" message={search ? `No results for "${search}".` : 'Add your first customer to begin tracking purchases.'} action={!search && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Customer</Button>} />
+            <EmptyState icon={Users} title="No customers found" message={search ? `No results for "${search}".` : 'Add your first customer to begin tracking purchases.'} action={!search && canWrite && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Customer</Button>} />
           ) : (
             <>
               <Table
@@ -93,8 +104,12 @@ export default function Customers() {
                     <Td>
                       <div className="flex items-center justify-end gap-1.5">
                         <Button size="sm" variant="secondary" icon={Eye} onClick={() => setViewingCustomer(c)} />
-                        <Button size="sm" variant="secondary" icon={Pencil} onClick={() => { setEditingCustomer(c); setFormOpen(true) }} />
-                        <Button size="sm" variant="danger" icon={Trash2} onClick={() => setDeleteTarget(c)} />
+                        {canWrite && (
+                          <Button size="sm" variant="secondary" icon={Pencil} onClick={() => { setEditingCustomer(c); setFormOpen(true) }} />
+                        )}
+                        {isAdmin && (
+                          <Button size="sm" variant="danger" icon={Trash2} onClick={() => setDeleteTarget(c)} />
+                        )}
                       </div>
                     </Td>
                   </tr>

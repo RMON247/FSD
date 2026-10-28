@@ -42,7 +42,7 @@ export default function AuthModal({ open, onClose }) {
     <Modal
       open={open} onClose={close}
       title={mode === 'login' ? 'Sign In' : 'Create Account'}
-      subtitle="Sign in to add, edit, or delete records — reading data never requires an account"
+      subtitle={mode === 'login' ? 'Sign in to access your warehouse inventory workspace' : 'Create an account. Admin verification is required for database access.'}
       footer={(
         <>
           <Button variant="secondary" onClick={close}>Cancel</Button>

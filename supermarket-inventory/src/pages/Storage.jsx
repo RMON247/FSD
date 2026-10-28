@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Plus, Warehouse, Eye, Pencil, Trash2, Search } from 'lucide-react'
+import { Plus, Warehouse, Eye, Pencil, Trash2, Search, Shield } from 'lucide-react'
 import { useData } from '../context/DataContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Badge from '../components/ui/Badge.jsx'
@@ -13,6 +14,7 @@ import StorageViewModal from '../components/modals/StorageViewModal.jsx'
 export default function Storage() {
   const { storageLocations, addStorage, updateStorage, deleteStorage, products } = useData()
   const { addToast } = useToast()
+  const { canWrite, isAdmin } = useAuth()
 
   const [search, setSearch] = useState('')
   const [formOpen, setFormOpen] = useState(false)
@@ -47,17 +49,26 @@ export default function Storage() {
 
   return (
     <div className="space-y-5">
+      {!canWrite && (
+        <div className="flex items-center gap-2.5 text-xs bg-slate-100 dark:bg-ink-800 border border-slate-200 dark:border-ink-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl">
+          <Shield size={15} className="text-brand-500 shrink-0" />
+          <span><strong>Read-Only Mode:</strong> Only administrators or users granted write access can create, modify, or delete storage bays. Ask an administrator to grant you access.</span>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative w-full sm:w-72">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search storage locations…" className="w-full pl-9 pr-3 py-2 rounded-lg bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-600 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-400" />
         </div>
-        <Button icon={Plus} onClick={() => { setEditingStorage(null); setFormOpen(true) }}>Add Storage Location</Button>
+        {canWrite && (
+          <Button icon={Plus} onClick={() => { setEditingStorage(null); setFormOpen(true) }}>Add Storage Location</Button>
+        )}
       </div>
 
       {filtered.length === 0 ? (
         <Card>
-          <EmptyState icon={Warehouse} title="No storage locations found" message={search ? `No results for "${search}".` : 'Add your first warehouse storage area to get started.'} action={!search && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Storage Location</Button>} />
+          <EmptyState icon={Warehouse} title="No storage locations found" message={search ? `No results for "${search}".` : 'Add your first warehouse storage area to get started.'} action={!search && canWrite && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Storage Location</Button>} />
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -93,8 +104,12 @@ export default function Storage() {
                   <p className="text-[11px] text-slate-400 mt-1.5">{available.toLocaleString()} units available</p>
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-ink-700">
                     <Button size="sm" variant="secondary" icon={Eye} className="flex-1" onClick={() => setViewingStorage(s)}>View</Button>
-                    <Button size="sm" variant="secondary" icon={Pencil} onClick={() => { setEditingStorage(s); setFormOpen(true) }} />
-                    <Button size="sm" variant="danger" icon={Trash2} onClick={() => setDeleteTarget(s)} />
+                    {canWrite && (
+                      <Button size="sm" variant="secondary" icon={Pencil} onClick={() => { setEditingStorage(s); setFormOpen(true) }} />
+                    )}
+                    {isAdmin && (
+                      <Button size="sm" variant="danger" icon={Trash2} onClick={() => setDeleteTarget(s)} />
+                    )}
                   </div>
                 </div>
               </Card>

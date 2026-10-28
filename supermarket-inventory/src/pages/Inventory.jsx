@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Search, PackagePlus, AlertTriangle, Boxes, DollarSign, PackageX, ClipboardList, ListPlus } from 'lucide-react'
+import { Search, PackagePlus, AlertTriangle, Boxes, DollarSign, PackageX, ClipboardList, ListPlus, Shield } from 'lucide-react'
 import { useData } from '../context/DataContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { ReorderCartProvider, useReorderCart } from '../context/ReorderCartContext.jsx'
 import Card from '../components/ui/Card.jsx'
 import StatCard from '../components/ui/StatCard.jsx'
@@ -33,6 +34,7 @@ const STATUS_OPTIONS = ['All', 'In Stock', 'Low Stock', 'Out of Stock']
 function InventoryContent() {
   const { products, storageLocations, categories, adjustStock } = useData()
   const { addToast } = useToast()
+  const { canWrite } = useAuth()
   const { items: reorderItems, addItem, count } = useReorderCart()
 
   const [search, setSearch] = useState('')
@@ -60,6 +62,13 @@ function InventoryContent() {
 
   return (
     <div className="space-y-5">
+      {!canWrite && (
+        <div className="flex items-center gap-2.5 text-xs bg-slate-100 dark:bg-ink-800 border border-slate-200 dark:border-ink-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl">
+          <Shield size={15} className="text-brand-500 shrink-0" />
+          <span><strong>Read-Only Mode:</strong> Only administrators or users granted write access can adjust inventory levels. Ask an administrator to grant you access.</span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="Total Inventory Value" value={formatCurrencyPrecise(totalValue)} icon={DollarSign} accent="brand" />
         <StatCard label="Low Stock Items" value={lowStockCount} icon={AlertTriangle} accent="amber" />

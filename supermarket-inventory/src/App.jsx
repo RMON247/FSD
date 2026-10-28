@@ -11,12 +11,27 @@ import Transactions from './pages/Transactions.jsx'
 import Reports from './pages/Reports.jsx'
 import Settings from './pages/Settings.jsx'
 import NotFound from './pages/NotFound.jsx'
+import LandingLogin from './pages/LandingLogin.jsx'
+import PendingVerification from './pages/PendingVerification.jsx'
+import { useAuth } from './context/AuthContext.jsx'
 import { useData } from './context/DataContext.jsx'
 import { Loading } from './components/ui/States.jsx'
 
 export default function App() {
+  const { isAuthenticated, isVerified } = useAuth()
   const { loading, error } = useData()
 
+  // 1. Unauthenticated users see the Landing / Login page
+  if (!isAuthenticated) {
+    return <LandingLogin />
+  }
+
+  // 2. Newly registered users whose accounts haven't been verified by an admin yet
+  if (!isVerified) {
+    return <PendingVerification />
+  }
+
+  // 3. Authenticated & admin-verified users get full database access inside Layout
   return (
     <Layout>
       {error && (

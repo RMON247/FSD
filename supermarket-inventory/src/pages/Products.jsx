@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, Pencil, Trash2, Eye, ShoppingBasket, PackagePlus } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, Eye, ShoppingBasket, PackagePlus, Shield } from 'lucide-react'
 import { useData } from '../context/DataContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import Card from '../components/ui/Card.jsx'
 import Button from '../components/ui/Button.jsx'
 import Badge from '../components/ui/Badge.jsx'
@@ -29,6 +30,8 @@ const COLUMNS = [
 export default function Products() {
   const { products, categories, addProduct, updateProduct, deleteProduct, adjustStock, storageLocations } = useData()
   const { addToast } = useToast()
+
+  const { canWrite, isAdmin } = useAuth()
 
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('All')
@@ -66,6 +69,13 @@ export default function Products() {
 
   return (
     <div className="space-y-5">
+      {!canWrite && (
+        <div className="flex items-center gap-2.5 text-xs bg-slate-100 dark:bg-ink-800 border border-slate-200 dark:border-ink-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl">
+          <Shield size={15} className="text-brand-500 shrink-0" />
+          <span><strong>Read-Only Mode:</strong> Only administrators or users granted write access can create, edit, or adjust inventory. Ask an administrator to grant you access.</span>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
           <div className="relative w-full sm:w-64">
@@ -77,13 +87,15 @@ export default function Products() {
             {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </SelectField>
         </div>
-        <Button icon={Plus} onClick={() => { setEditingProduct(null); setFormOpen(true) }}>Add Product</Button>
+        {canWrite && (
+          <Button icon={Plus} onClick={() => { setEditingProduct(null); setFormOpen(true) }}>Add Product</Button>
+        )}
       </div>
 
       <Card padded={false} className="pt-5">
         <div className="px-5">
           {paged.length === 0 && (
-            <EmptyState icon={ShoppingBasket} title="No products found" message={search || categoryFilter !== 'All' ? 'Try adjusting your search or filters.' : 'Add your first product to start tracking inventory.'} action={!search && categoryFilter === 'All' && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Product</Button>} />
+            <EmptyState icon={ShoppingBasket} title="No products found" message={search || categoryFilter !== 'All' ? 'Try adjusting your search or filters.' : 'Add your first product to start tracking inventory.'} action={!search && categoryFilter === 'All' && canWrite && <Button icon={Plus} onClick={() => setFormOpen(true)}>Add Product</Button>} />
           )}
         </div>
         {paged.length > 0 && (
@@ -103,10 +115,16 @@ export default function Products() {
                   <Td><Badge>{p.status}</Badge></Td>
                   <Td>
                     <div className="flex items-center justify-end gap-1.5">
-                      <Button size="sm" variant="secondary" icon={PackagePlus} onClick={() => setStockProduct(p)} title="Adjust stock" />
+                      {canWrite && (
+                        <Button size="sm" variant="secondary" icon={PackagePlus} onClick={() => setStockProduct(p)} title="Adjust stock" />
+                      )}
                       <Link to={`/products/${p.id}`}><Button size="sm" variant="secondary" icon={Eye} title="View" /></Link>
-                      <Button size="sm" variant="secondary" icon={Pencil} onClick={() => { setEditingProduct(p); setFormOpen(true) }} title="Edit" />
-                      <Button size="sm" variant="danger" icon={Trash2} onClick={() => setDeleteTarget(p)} title="Delete" />
+                      {canWrite && (
+                        <Button size="sm" variant="secondary" icon={Pencil} onClick={() => { setEditingProduct(p); setFormOpen(true) }} title="Edit" />
+                      )}
+                      {isAdmin && (
+                        <Button size="sm" variant="danger" icon={Trash2} onClick={() => setDeleteTarget(p)} title="Delete" />
+                      )}
                     </div>
                   </Td>
                 </tr>

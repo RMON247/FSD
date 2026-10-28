@@ -1,4 +1,10 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
+dotenv.config()
 import { connectDB } from './config/db.js'
 import Product from './models/Product.js'
 import Storage from './models/Storage.js'
@@ -115,7 +121,27 @@ async function seed() {
   const existingAdmin = await User.findOne({ email: 'admin@stockyard.com' })
   if (!existingAdmin) {
     console.log('Creating default admin user (admin@stockyard.com / Password123)…')
-    await User.create({ name: 'Maria Winters', email: 'admin@stockyard.com', password: 'Password123', role: 'admin' })
+    await User.create({
+      name: 'Maria Winters',
+      email: 'admin@stockyard.com',
+      password: 'Password123',
+      role: 'admin',
+      isVerified: true
+    })
+  } else {
+    let modified = false
+    if (!existingAdmin.isVerified) {
+      existingAdmin.isVerified = true
+      modified = true
+    }
+    if (existingAdmin.role !== 'admin') {
+      existingAdmin.role = 'admin'
+      modified = true
+    }
+    if (modified) {
+      await existingAdmin.save()
+      console.log('Updated existing admin user with verified status and admin role.')
+    }
   }
 
   console.log('✓ Seed complete:', productDocs.length, 'products,', storageDocs.length, 'storage locations.')
