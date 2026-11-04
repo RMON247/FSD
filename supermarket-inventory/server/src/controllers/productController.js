@@ -4,7 +4,8 @@ import Transaction from '../models/Transaction.js'
 export async function listProducts(req, res, next) {
   try {
     const { search, category, status } = req.query
-    const query = {}
+    const query = { organizationId: req.organizationId }
+
     if (search) query.$text = { $search: search }
     if (category && category !== 'All') query.category = category
 
@@ -22,7 +23,7 @@ export async function listProducts(req, res, next) {
 
 export async function getProduct(req, res, next) {
   try {
-    const product = await Product.findById(req.params.id)
+    const product = await Product.findOne({ _id: req.params.id, organizationId: req.organizationId })
     if (!product) return res.status(404).json({ message: 'Product not found.' })
     res.json({ product })
   } catch (err) {
@@ -32,7 +33,8 @@ export async function getProduct(req, res, next) {
 
 export async function createProduct(req, res, next) {
   try {
-    const payload = { ...req.body }
+    const payload = { ...req.body, organizationId: req.organizationId }
+
     if (!payload.sku || !payload.sku.trim()) {
       const prefix = (payload.category || 'PR').slice(0, 2).toUpperCase()
       payload.sku = `${prefix}${Math.floor(1000 + Math.random() * 9000)}`
@@ -47,6 +49,7 @@ export async function createProduct(req, res, next) {
     let tx = null
     if (product.quantity > 0) {
       tx = await Transaction.create({
+        organizationId: req.organizationId,
         type: 'Stock In',
         productId: product._id,
         productName: product.name,
@@ -60,6 +63,7 @@ export async function createProduct(req, res, next) {
 
     req.app.locals.broadcast?.({
       type: 'product:created',
+      organizationId: req.organizationId.toString(),
       payload: product,
       actor,
       clientId
@@ -68,6 +72,7 @@ export async function createProduct(req, res, next) {
     if (tx) {
       req.app.locals.broadcast?.({
         type: 'transaction:created',
+        organizationId: req.organizationId.toString(),
         payload: tx,
         actor,
         clientId
@@ -83,16 +88,19 @@ export async function createProduct(req, res, next) {
 export async function updateProduct(req, res, next) {
   try {
     const payload = { ...req.body }
+    delete payload.organizationId
+
     if (payload.sku === '') {
       delete payload.sku
     } else if (payload.sku) {
       payload.sku = payload.sku.trim().toUpperCase()
     }
 
-    const product = await Product.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
-      runValidators: true
-    })
+    const product = await Product.findOneAndUpdate(
+      { _id: req.params.id, organizationId: req.organizationId },
+      payload,
+      { new: true, runValidators: true }
+    )
     if (!product) return res.status(404).json({ message: 'Product not found.' })
 
     const clientId = req.headers['x-client-id']
@@ -100,6 +108,7 @@ export async function updateProduct(req, res, next) {
 
     req.app.locals.broadcast?.({
       type: 'product:updated',
+      organizationId: req.organizationId.toString(),
       payload: product,
       actor,
       clientId
@@ -113,7 +122,7 @@ export async function updateProduct(req, res, next) {
 
 export async function deleteProduct(req, res, next) {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id)
+    const product = await Product.findOneAndDelete({ _id: req.params.id, organizationId: req.organizationId })
     if (!product) return res.status(404).json({ message: 'Product not found.' })
 
     const clientId = req.headers['x-client-id']
@@ -121,6 +130,7 @@ export async function deleteProduct(req, res, next) {
 
     req.app.locals.broadcast?.({
       type: 'product:deleted',
+      organizationId: req.organizationId.toString(),
       payload: { id: product._id, name: product.name },
       actor,
       clientId
@@ -132,14 +142,10 @@ export async function deleteProduct(req, res, next) {
   }
 }
 
-/**
- * Stock adjustment — applies a stock-in / stock-out delta, logs a Transaction
- * record, and broadcasts the update over WebSocket to every connected client.
- */
 export async function adjustStock(req, res, next) {
   try {
     const { direction, quantity, reason } = req.body
-    const product = await Product.findById(req.params.id)
+    const product = await Product.findOne({ _id: req.params.id, organizationId: req.organizationId })
     if (!product) return res.status(404).json({ message: 'Product not found.' })
 
     const delta = direction === 'in' ? quantity : -quantity
@@ -150,6 +156,7 @@ export async function adjustStock(req, res, next) {
     const actor = req.user?.name || 'A team member'
 
     const tx = await Transaction.create({
+      organizationId: req.organizationId,
       type: direction === 'in' ? 'Stock In' : 'Stock Out',
       productId: product._id,
       productName: product.name,
@@ -162,6 +169,7 @@ export async function adjustStock(req, res, next) {
 
     req.app.locals.broadcast?.({
       type: 'product:updated',
+      organizationId: req.organizationId.toString(),
       payload: product,
       actor,
       clientId
@@ -169,6 +177,7 @@ export async function adjustStock(req, res, next) {
 
     req.app.locals.broadcast?.({
       type: 'stock:update',
+      organizationId: req.organizationId.toString(),
       payload: {
         id: product._id,
         product,
@@ -183,6 +192,7 @@ export async function adjustStock(req, res, next) {
 
     req.app.locals.broadcast?.({
       type: 'transaction:created',
+      organizationId: req.organizationId.toString(),
       payload: tx,
       actor,
       clientId

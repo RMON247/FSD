@@ -2,8 +2,9 @@ import mongoose from 'mongoose'
 
 const productSchema = new mongoose.Schema(
   {
+    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    sku: { type: String, required: true, unique: true, trim: true, uppercase: true },
+    sku: { type: String, required: true, trim: true, uppercase: true },
     category: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
     unit: { type: String, default: 'each', trim: true },
@@ -27,6 +28,7 @@ productSchema.virtual('value').get(function value() {
 })
 
 productSchema.set('toJSON', { virtuals: true })
+productSchema.index({ organizationId: 1, sku: 1 }, { unique: true })
 productSchema.index({ name: 'text', sku: 'text' })
 
 export default mongoose.model('Product', productSchema)

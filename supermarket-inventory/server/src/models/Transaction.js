@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 
 const transactionSchema = new mongoose.Schema(
   {
+    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     type: { type: String, enum: ['Stock In', 'Stock Out'], required: true },
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     productName: { type: String, required: true },
@@ -16,6 +17,6 @@ const transactionSchema = new mongoose.Schema(
 )
 
 transactionSchema.set('toJSON', { virtuals: true })
-transactionSchema.index({ date: -1 })
+transactionSchema.index({ organizationId: 1, date: -1 })
 
 export default mongoose.model('Transaction', transactionSchema)

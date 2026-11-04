@@ -3,7 +3,8 @@ import Transaction from '../models/Transaction.js'
 export async function listTransactions(req, res, next) {
   try {
     const { type, storageId, limit } = req.query
-    const query = {}
+    const query = { organizationId: req.organizationId }
+
     if (type && type !== 'All') query.type = type
     if (storageId && storageId !== 'All') query.storageId = storageId
 

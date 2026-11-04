@@ -3,20 +3,21 @@ import { body, param } from 'express-validator'
 import {
   listProducts, getProduct, createProduct, updateProduct, deleteProduct, adjustStock
 } from '../controllers/productController.js'
-import { requireAuth, requireVerified, requireRole } from '../middleware/auth.js'
+import { requireAuth } from '../middleware/auth.js'
+import { requireOrganization, requireOrgRole } from '../middleware/tenant.js'
 import { validate } from '../utils/validate.js'
 
 const router = Router()
 
-// All product database access requires an authenticated & admin-verified account
-router.use(requireAuth, requireVerified)
+// All product database access is strictly scoped to the active organization
+router.use(requireAuth, requireOrganization)
 
 router.get('/', listProducts)
 router.get('/:id', param('id').isMongoId(), validate, getProduct)
 
 router.post(
   '/',
-  requireRole('admin', 'manager'),
+  requireOrgRole('admin', 'manager'),
   [
     body('name').trim().notEmpty().withMessage('Product name is required'),
     body('sku').optional({ checkFalsy: true }).trim(),
@@ -29,11 +30,11 @@ router.post(
   createProduct
 )
 
-router.put('/:id', requireRole('admin', 'manager'), param('id').isMongoId(), validate, updateProduct)
+router.put('/:id', requireOrgRole('admin', 'manager'), param('id').isMongoId(), validate, updateProduct)
 
 router.patch(
   '/:id/stock',
-  requireRole('admin', 'manager'),
+  requireOrgRole('admin', 'manager'),
   [
     param('id').isMongoId(),
     body('direction').isIn(['in', 'out']),
@@ -43,6 +44,6 @@ router.patch(
   adjustStock
 )
 
-router.delete('/:id', requireRole('admin'), param('id').isMongoId(), validate, deleteProduct)
+router.delete('/:id', requireOrgRole('admin'), param('id').isMongoId(), validate, deleteProduct)
 
 export default router

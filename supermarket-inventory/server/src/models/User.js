@@ -6,8 +6,9 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 8, select: false },
-    role: { type: String, enum: ['admin', 'manager', 'viewer'], default: 'viewer' },
-    isVerified: { type: Boolean, default: false }
+    role: { type: String, enum: ['admin', 'manager', 'viewer'], default: 'admin' },
+    isVerified: { type: Boolean, default: true },
+    currentOrganizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' }
   },
   { timestamps: true }
 )
@@ -29,7 +30,8 @@ userSchema.methods.toSafeObject = function toSafeObject() {
     name: this.name,
     email: this.email,
     role: this.role,
-    isVerified: !!this.isVerified,
+    isVerified: true,
+    currentOrganizationId: this.currentOrganizationId,
     createdAt: this.createdAt
   }
 }

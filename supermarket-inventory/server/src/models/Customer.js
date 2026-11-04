@@ -12,8 +12,9 @@ const purchaseSchema = new mongoose.Schema(
 
 const customerSchema = new mongoose.Schema(
   {
+    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, required: true, trim: true },
     status: { type: String, enum: ['Active', 'Inactive', 'VIP'], default: 'Active' },
     totalPurchases: { type: Number, default: 0, min: 0 },
@@ -24,5 +25,6 @@ const customerSchema = new mongoose.Schema(
 )
 
 customerSchema.set('toJSON', { virtuals: true })
+customerSchema.index({ organizationId: 1, email: 1 }, { unique: true })
 
 export default mongoose.model('Customer', customerSchema)
