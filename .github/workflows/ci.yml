@@ -1,19 +1,25 @@
-name: ci
+name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   frontend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: supermarket-inventory
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
+          cache: npm
+          cache-dependency-path: supermarket-inventory/package-lock.json
+      - run: npm ci
       - run: npm run lint
       - run: npm run build
 
@@ -21,11 +27,13 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: supermarket-warehouse-inventory\supermarket-inventory\server
+        working-directory: supermarket-inventory/server
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
+          cache: npm
+          cache-dependency-path: supermarket-inventory/server/package-lock.json
+      - run: npm ci
       - run: node --check src/index.js
