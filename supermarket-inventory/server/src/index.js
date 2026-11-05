@@ -1,4 +1,4 @@
-import dotenv from 'dotenv'
+import dotenv from 'dotenv' //testing 
 import path from 'path'
 import { fileURLToPath } from 'url'
 
