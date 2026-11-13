@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState, useCallback, useEffect } from 'react'
 import { useAuth, API_URL } from './AuthContext.jsx'
+import { useOrg } from './OrgContext.jsx'
 import { useToast } from './ToastContext.jsx'
 import { useRealtime } from './RealtimeContext.jsx'
 import { categories, suppliers } from '../data/dummyData.js'
@@ -32,7 +33,8 @@ function normalizeTransaction(t) {
 }
 
 export function DataProvider({ children }) {
-  const { authHeader, user, setUser } = useAuth()
+  const { authHeader, user } = useAuth()
+  const { activeOrgId } = useOrg()
   const { addToast } = useToast()
   const { subscribe, clientId } = useRealtime()
 
@@ -40,7 +42,7 @@ export function DataProvider({ children }) {
   const [storageLocations, setStorageLocations] = useState([])
   const [customers, setCustomers] = useState([])
   const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const api = useCallback(async (path, options = {}) => {
@@ -49,6 +51,7 @@ export function DataProvider({ children }) {
       headers: {
         'Content-Type': 'application/json',
         'X-Client-Id': clientId,
+        ...(activeOrgId ? { 'X-Organization-Id': activeOrgId } : {}),
         ...authHeader,
         ...(options.headers || {})
       }
@@ -64,33 +67,37 @@ export function DataProvider({ children }) {
       throw new Error(errorMsg)
     }
     return data
-  }, [authHeader, clientId])
+  }, [authHeader, clientId, activeOrgId])
 
   const refreshProducts = useCallback(async () => {
+    if (!activeOrgId) return
     const data = await api('/api/products')
     setProducts((data.products || []).map(normalizeProduct))
-  }, [api])
+  }, [api, activeOrgId])
 
   const refreshStorage = useCallback(async () => {
+    if (!activeOrgId) return
     const data = await api('/api/storage')
     setStorageLocations((data.locations || []).map(normalizeStorage))
-  }, [api])
+  }, [api, activeOrgId])
 
   const refreshCustomers = useCallback(async () => {
+    if (!activeOrgId) return
     const data = await api('/api/customers')
     setCustomers((data.customers || []).map(normalizeCustomer))
-  }, [api])
+  }, [api, activeOrgId])
 
   const refreshTransactions = useCallback(async () => {
+    if (!activeOrgId) return
     const data = await api('/api/transactions')
     setTransactions((data.transactions || []).map(normalizeTransaction))
-  }, [api])
+  }, [api, activeOrgId])
 
-  // Load everything from the database once authenticated and verified
+  // Load everything from the database once authenticated and an active warehouse is selected
   useEffect(() => {
     let cancelled = false
 
-    if (!user || !user.isVerified) {
+    if (!user || !activeOrgId) {
       setProducts([])
       setStorageLocations([])
       setCustomers([])
@@ -108,7 +115,7 @@ export function DataProvider({ children }) {
       } catch (err) {
         if (!cancelled) {
           setError(err.message)
-          addToast(`Could not load data from the backend: ${err.message}`, 'error')
+          addToast(`Could not load warehouse data: ${err.message}`, 'error')
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -116,14 +123,20 @@ export function DataProvider({ children }) {
     }
     loadAll()
     return () => { cancelled = true }
-  }, [user?.isVerified, user?.id, refreshProducts, refreshStorage, refreshCustomers, refreshTransactions, addToast])
+  }, [user?.id, activeOrgId, refreshProducts, refreshStorage, refreshCustomers, refreshTransactions, addToast])
 
-  // Real-time synchronization over WebSocket
+  // Real-time synchronization over WebSocket - scoped to active organization
   useEffect(() => {
     if (!subscribe) return
 
     const unsubscribe = subscribe((event) => {
       if (!event || !event.type) return
+
+      // Strict isolation: if event has organizationId and doesn't match activeOrgId, discard
+      if (event.organizationId && activeOrgId && event.organizationId !== activeOrgId) {
+        return
+      }
+
       const isRemote = event.clientId !== clientId
       const actor = event.actor || 'A team member'
 
@@ -204,7 +217,7 @@ export function DataProvider({ children }) {
             return [s, ...prev]
           })
           if (isRemote) {
-            addToast(`${actor} added storage location "${s.name}"`, 'info')
+            addToast(`${actor} added storage bay "${s.name}"`, 'info')
           }
           break
         }
@@ -216,7 +229,7 @@ export function DataProvider({ children }) {
             prev.map((item) => (item.id === s.id || item._id === s.id ? { ...item, ...s } : item))
           )
           if (isRemote) {
-            addToast(`${actor} updated storage location "${s.name}"`, 'info')
+            addToast(`${actor} updated storage bay "${s.name}"`, 'info')
           }
           break
         }
@@ -227,7 +240,7 @@ export function DataProvider({ children }) {
           if (targetId) {
             setStorageLocations((prev) => prev.filter((item) => item.id !== targetId && item._id !== targetId))
             if (isRemote) {
-              addToast(`${actor} deleted storage location ${name ? `"${name}"` : ''}`, 'info')
+              addToast(`${actor} deleted storage bay ${name ? `"${name}"` : ''}`, 'info')
             }
           }
           break
@@ -243,7 +256,7 @@ export function DataProvider({ children }) {
             return [c, ...prev]
           })
           if (isRemote) {
-            addToast(`${actor} registered customer "${c.name}"`, 'info')
+            addToast(`${actor} added customer "${c.name}"`, 'info')
           }
           break
         }
@@ -284,39 +297,13 @@ export function DataProvider({ children }) {
           break
         }
 
-        case 'user:authorized':
-        case 'user:role_updated': {
-          const { id, role, isVerified, user: updatedUser } = event.payload || {}
-          if (id && user && (user.id === id || user._id === id)) {
-            setUser((prev) => {
-              if (!prev) return prev
-              return {
-                ...prev,
-                ...(role ? { role } : {}),
-                ...(isVerified !== undefined ? { isVerified } : {}),
-                ...(updatedUser || {})
-              }
-            })
-            if (isVerified && !user.isVerified) {
-              addToast('Your account was verified by an administrator! Database access unlocked.', 'success')
-            } else if (role === 'admin') {
-              addToast('Your permissions have been upgraded to Administrator!', 'success')
-            } else if (role === 'manager') {
-              addToast('An administrator has granted you Write & Edit access!', 'success')
-            } else if (role === 'viewer') {
-              addToast('Your permissions were changed to Viewer (Read-only).', 'info')
-            }
-          }
-          break
-        }
-
         default:
           break
       }
     })
 
     return unsubscribe
-  }, [subscribe, clientId, addToast, user, setUser])
+  }, [subscribe, clientId, addToast, activeOrgId])
 
   // ---- Products ----
   const addProduct = useCallback(async (data) => {
@@ -403,8 +390,6 @@ export function DataProvider({ children }) {
     setCustomers((prev) => prev.filter((c) => c.id !== id && c._id !== id))
   }, [api])
 
-  // Wrap every mutator so a failed request surfaces as a toast instead of an
-  // unhandled promise rejection, while still letting callers await it if they want.
   const withErrorToast = useCallback((fn) => async (...args) => {
     try {
       await fn(...args)

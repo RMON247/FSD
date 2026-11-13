@@ -19,6 +19,5 @@ storageSchema.virtual('status').get(function status() {
 })
 
 storageSchema.set('toJSON', { virtuals: true })
-storageSchema.index({ organizationId: 1 })
 
 export default mongoose.model('Storage', storageSchema)

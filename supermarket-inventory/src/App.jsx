@@ -12,38 +12,49 @@ import Reports from './pages/Reports.jsx'
 import Settings from './pages/Settings.jsx'
 import NotFound from './pages/NotFound.jsx'
 import LandingLogin from './pages/LandingLogin.jsx'
-import PendingVerification from './pages/PendingVerification.jsx'
+import WarehouseSetup from './pages/WarehouseSetup.jsx'
 import { useAuth } from './context/AuthContext.jsx'
+import { useOrg } from './context/OrgContext.jsx'
 import { useData } from './context/DataContext.jsx'
 import { Loading } from './components/ui/States.jsx'
 
 export default function App() {
-  const { isAuthenticated, isVerified } = useAuth()
+  const { isAuthenticated } = useAuth()
+  const { organizations, activeOrgId, loadingOrgs } = useOrg()
   const { loading, error } = useData()
 
-  // 1. Unauthenticated users see the Landing / Login page
+  // 1. Unauthenticated users see the clean professional Landing & Sign-in page
   if (!isAuthenticated) {
     return <LandingLogin />
   }
 
-  // 2. Newly registered users whose accounts haven't been verified by an admin yet
-  if (!isVerified) {
-    return <PendingVerification />
+  // 2. Loading organization memberships
+  if (loadingOrgs) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-ink-950 flex items-center justify-center">
+        <Loading label="Loading warehouse workspaces…" />
+      </div>
+    )
   }
 
-  // 3. Authenticated & admin-verified users get full database access inside Layout
+  // 3. If the user doesn't belong to any organization yet, guide them to Create or Join
+  if (organizations.length === 0 || !activeOrgId) {
+    return <WarehouseSetup />
+  }
+
+  // 4. Authenticated users with active organization warehouse
   return (
     <Layout>
       {error && (
         <div className="flex items-start gap-3 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-xl px-4 py-3 mb-5">
           <AlertTriangle size={17} className="text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
           <p className="text-sm text-rose-800 dark:text-rose-300">
-            <span className="font-medium">Couldn&rsquo;t reach the backend.</span> {error} — make sure the API server is running and <code className="text-xs bg-rose-100 dark:bg-rose-500/20 px-1 py-0.5 rounded">VITE_API_URL</code> points to it.
+            <span className="font-medium">Couldn&rsquo;t reach the backend.</span> {error} — verify the API server is active and accessible.
           </p>
         </div>
       )}
       {loading ? (
-        <Loading label="Loading data from the database…" full />
+        <Loading label="Loading warehouse database…" full />
       ) : (
         <Routes>
           <Route path="/" element={<Dashboard />} />

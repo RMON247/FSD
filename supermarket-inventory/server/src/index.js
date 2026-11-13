@@ -1,4 +1,4 @@
-import dotenv from 'dotenv' //testing 
+import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -14,6 +14,7 @@ import { WebSocketServer } from 'ws'
 
 import { connectDB } from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
+import orgRoutes from './routes/orgRoutes.js'
 import productRoutes from './routes/productRoutes.js'
 import storageRoutes from './routes/storageRoutes.js'
 import customerRoutes from './routes/customerRoutes.js'
@@ -45,7 +46,7 @@ app.use(cors({
 app.use(express.json({ limit: '100kb' }))
 
 // Rate limiting: allow ample headroom for multi-user real-time work (default 300)
-const maxRequests = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 300
+const maxRequests = process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 500
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: maxRequests,
@@ -53,12 +54,12 @@ app.use('/api', rateLimit({
   legacyHeaders: false,
   message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
 }))
-app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 50 }))
 
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }))
 
 // ---- REST API routes ----
 app.use('/api/auth', authRoutes)
+app.use('/api/organizations', orgRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/storage', storageRoutes)
 app.use('/api/customers', customerRoutes)
@@ -95,7 +96,6 @@ wss.on('connection', (socket) => {
     socket.isAlive = true
   })
 
-  // Send initial connection acknowledgement with current active connection count
   socket.send(JSON.stringify({
     type: 'connection:ack',
     payload: {
@@ -105,7 +105,6 @@ wss.on('connection', (socket) => {
     }
   }))
 
-  // Broadcast presence count so all users know another user joined
   broadcastPresence()
 
   socket.on('message', (raw) => {
@@ -127,7 +126,6 @@ wss.on('connection', (socket) => {
   })
 })
 
-// Keep alive interval: ping connected sockets every 25s
 const heartbeatInterval = setInterval(() => {
   wss.clients.forEach((socket) => {
     if (socket.isAlive === false) return socket.terminate()

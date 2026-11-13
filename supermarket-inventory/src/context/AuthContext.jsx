@@ -38,6 +38,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     setToken(null)
     setUser(null)
+    localStorage.removeItem('stockyard-active-org-id')
   }, [setToken, setUser])
 
   const refreshUser = useCallback(async () => {
@@ -63,27 +64,21 @@ export function AuthProvider({ children }) {
 
   const authHeader = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token])
 
-  const isVerified = Boolean(user?.isVerified)
-  const isAdmin = user?.role === 'admin' && isVerified
-  const canWrite = (user?.role === 'admin' || user?.role === 'manager') && isVerified
-  const isViewer = user?.role === 'viewer'
-
   const value = useMemo(() => ({
     token,
     user,
     setUser,
     isAuthenticated: !!token && !!user,
-    isVerified,
-    isAdmin,
-    canWrite,
-    isViewer,
-    role: user?.role || 'guest',
+    isVerified: true,
+    isAdmin: user?.role === 'admin',
+    canWrite: user?.role === 'admin' || user?.role === 'manager',
+    role: user?.role || 'member',
     login,
     register,
     logout,
     refreshUser,
     authHeader
-  }), [token, user, setUser, isVerified, isAdmin, canWrite, isViewer, login, register, logout, refreshUser, authHeader])
+  }), [token, user, setUser, login, register, logout, refreshUser, authHeader])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

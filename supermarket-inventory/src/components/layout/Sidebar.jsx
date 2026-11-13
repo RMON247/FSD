@@ -1,23 +1,35 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Warehouse, Boxes, ShoppingBasket, Users, ArrowLeftRight,
-  BarChart3, Settings, PackageCheck, X, Radio
+  BarChart3, Settings, PackageCheck, X, Copy, Check, Building2
 } from 'lucide-react'
-import { useRealtime } from '../../context/RealtimeContext.jsx'
+import { useState } from 'react'
+import { useOrg } from '../../context/OrgContext.jsx'
+import { useToast } from '../../context/ToastContext.jsx'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/storage', label: 'Storage', icon: Warehouse },
+  { to: '/storage', label: 'Storage Bays', icon: Warehouse },
   { to: '/inventory', label: 'Inventory', icon: Boxes },
   { to: '/products', label: 'Products', icon: ShoppingBasket },
   { to: '/customers', label: 'Customers', icon: Users },
   { to: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { to: '/reports', label: 'Reports', icon: BarChart3 },
-  { to: '/settings', label: 'Settings', icon: Settings }
+  { to: '/reports', label: 'Analytics', icon: BarChart3 },
+  { to: '/settings', label: 'Settings & Team', icon: Settings }
 ]
 
 export default function Sidebar({ mobileOpen, onClose }) {
-  const { connected, secondsAgo } = useRealtime()
+  const { activeOrg, userOrgRole } = useOrg()
+  const { addToast } = useToast()
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyCode = () => {
+    if (!activeOrg?.code) return
+    navigator.clipboard.writeText(activeOrg.code)
+    setCopied(true)
+    addToast(`Invite code ${activeOrg.code} copied! Share with your staff.`, 'success')
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <>
@@ -30,7 +42,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
             </div>
             <div>
               <p className="font-display font-bold text-white text-[15px] leading-tight">StockYard</p>
-              <p className="text-[10px] text-slate-400 leading-tight tracking-wide">WAREHOUSE OPS</p>
+              <p className="text-[10px] text-slate-400 leading-tight tracking-wide">WAREHOUSE SYSTEM</p>
             </div>
           </div>
           <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-white">
@@ -39,7 +51,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
         </div>
 
         <nav className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 space-y-0.5">
-          <p className="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Main Menu</p>
+          <p className="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Management</p>
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
@@ -62,15 +74,34 @@ export default function Sidebar({ mobileOpen, onClose }) {
           ))}
         </nav>
 
-        <div className="p-3 m-3 rounded-xl bg-white/5 border border-white/5">
-          <p className="text-xs font-semibold text-white mb-1 flex items-center gap-1.5">
-            <Radio size={12} className={connected ? 'text-teal-400' : 'text-slate-500'} />
-            Central Warehouse #04
-          </p>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            {connected ? 'Live sync connected' : 'Live sync offline — showing local data'} &middot; last update {secondsAgo}s ago
-          </p>
-        </div>
+        {/* Active Warehouse Footnote with Invite Code */}
+        {activeOrg && (
+          <div className="p-3 m-3 rounded-xl bg-white/5 border border-white/5">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
+                <Building2 size={13} className="text-brand-400 shrink-0" />
+                <span className="truncate">{activeOrg.name}</span>
+              </p>
+            </div>
+            <p className="text-[10px] text-slate-400 truncate mb-2">
+              {activeOrg.location || 'Warehouse Facility'} &bull; <span className="capitalize">{userOrgRole}</span>
+            </p>
+
+            <button
+              onClick={handleCopyCode}
+              className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg bg-black/20 hover:bg-black/35 text-[11px] font-mono text-slate-300 transition-colors"
+              title="Copy organization invite code"
+            >
+              <span className="text-slate-400 text-[10px] uppercase font-sans">Invite:</span>
+              <span className="font-bold text-white tracking-wider">{activeOrg.code}</span>
+              {copied ? (
+                <Check size={12} className="text-emerald-400" />
+              ) : (
+                <Copy size={12} className="text-slate-400" />
+              )}
+            </button>
+          </div>
+        )}
       </aside>
     </>
   )

@@ -5,6 +5,7 @@ import App from './App.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { ToastProvider } from './context/ToastContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { OrgProvider } from './context/OrgContext.jsx'
 import { DataProvider } from './context/DataContext.jsx'
 import { RealtimeProvider } from './context/RealtimeContext.jsx'
 import './index.css'
@@ -16,9 +17,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <ToastProvider>
           <AuthProvider>
             <RealtimeProvider>
-              <DataProvider>
-                <App />
-              </DataProvider>
+              <OrgProvider>
+                <DataProvider>
+                  <App />
+                </DataProvider>
+              </OrgProvider>
             </RealtimeProvider>
           </AuthProvider>
         </ToastProvider>
