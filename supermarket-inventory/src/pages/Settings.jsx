@@ -14,13 +14,25 @@ import Badge from '../components/ui/Badge.jsx'
 import { TextField } from '../components/ui/Field.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 
-function Toggle({ checked, onChange }) {
+function Toggle({ checked, onChange, id, label }) {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      id={id}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 rounded-full transition-colors shrink-0 ${checked ? 'bg-brand-600' : 'bg-slate-200 dark:bg-ink-600'}`}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full p-0.5 border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink-900 ${
+        checked ? 'bg-brand-600' : 'bg-slate-300 dark:bg-ink-600'
+      }`}
     >
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+          checked ? 'translate-x-5' : 'translate-x-0'
+        }`}
+      />
     </button>
   )
 }
@@ -287,21 +299,6 @@ export default function Settings() {
         </div>
       </Card>
 
-      {/* Database Isolation Architecture Info */}
-      <Card>
-        <CardHeader
-          title="Data Isolation &amp; Multi-Store Privacy"
-          subtitle="Enterprise multi-tenant database partitioning"
-          icon={Shield}
-        />
-        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-          Every organization in StockYard operates as a completely partitioned warehouse.
-          All products, inventory quantities, temperature bays, customer transactions, and order logs
-          are strictly scoped to the active organization ID.
-          Store A can never inspect or alter Store B&rsquo;s warehouse data.
-        </p>
-      </Card>
-
       {/* Appearance Settings */}
       <Card>
         <CardHeader title="Appearance" subtitle="Choose how StockYard looks on this device" icon={Sun} />
@@ -359,7 +356,11 @@ export default function Settings() {
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.label}</p>
                 <p className="text-xs text-slate-400">{item.desc}</p>
               </div>
-              <Toggle checked={notifications[item.key]} onChange={(v) => setNotifications({ ...notifications, [item.key]: v })} />
+              <Toggle
+                label={item.label}
+                checked={notifications[item.key]}
+                onChange={(v) => setNotifications({ ...notifications, [item.key]: v })}
+              />
             </div>
           ))}
         </div>
