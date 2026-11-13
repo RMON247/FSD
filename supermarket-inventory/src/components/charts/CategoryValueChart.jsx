@@ -1,12 +1,27 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { useTheme } from '../../context/ThemeContext.jsx'
+import { EmptyState } from '../ui/States.jsx'
+import { DollarSign } from 'lucide-react'
 
 const COLORS = ['#4B63E8', '#0EA5A0', '#E8A23B', '#E8654B', '#5C8A3A', '#8EA9FF', '#6484F7', '#3B4ED0', '#E8654B', '#0EA5A0']
 
-export default function CategoryValueChart({ data }) {
+export default function CategoryValueChart({ data = [] }) {
   const { theme } = useTheme()
   const gridColor = theme === 'dark' ? '#1C2941' : '#E2E8F0'
   const textColor = theme === 'dark' ? '#94A3B8' : '#64748B'
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[280px] flex items-center justify-center">
+        <EmptyState
+          icon={DollarSign}
+          title="No inventory valuation data"
+          message="Add products to this warehouse to visualize inventory value by category."
+        />
+      </div>
+    )
+  }
+
   const sorted = [...data].sort((a, b) => b.value - a.value)
 
   return (

@@ -1,10 +1,26 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { useTheme } from '../../context/ThemeContext.jsx'
+import { EmptyState } from '../ui/States.jsx'
+import { TrendingUp } from 'lucide-react'
 
-export default function StockTrendChart({ data }) {
+export default function StockTrendChart({ data = [] }) {
   const { theme } = useTheme()
   const gridColor = theme === 'dark' ? '#1C2941' : '#E2E8F0'
   const textColor = theme === 'dark' ? '#94A3B8' : '#64748B'
+
+  const hasActivity = data && data.some((d) => (d.in || 0) > 0 || (d.out || 0) > 0)
+
+  if (!hasActivity) {
+    return (
+      <div className="h-[260px] flex items-center justify-center">
+        <EmptyState
+          icon={TrendingUp}
+          title="No stock movements logged yet"
+          message="Inbound and outbound transactions will generate real-time 6-month trend lines here."
+        />
+      </div>
+    )
+  }
 
   return (
     <ResponsiveContainer width="100%" height={260}>

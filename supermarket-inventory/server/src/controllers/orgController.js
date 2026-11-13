@@ -39,7 +39,7 @@ export async function listUserOrganizations(req, res, next) {
 
 export async function createOrganization(req, res, next) {
   try {
-    const { name, description, location } = req.body
+    const { name, description, location, initSampleBays } = req.body
     if (!name || !name.trim()) {
       return res.status(400).json({ message: 'Warehouse organization name is required.' })
     }
@@ -63,12 +63,14 @@ export async function createOrganization(req, res, next) {
       ]
     })
 
-    // Seed initial default storage bays for the new organization warehouse
-    await Storage.insertMany([
-      { organizationId: org._id, name: 'Main Ambient Floor', location: `${org.name} - Bay 1`, type: 'Ambient', capacity: 5000, used: 0 },
-      { organizationId: org._id, name: 'Refrigerated Cold Room', location: `${org.name} - Bay 2`, type: 'Refrigerated', capacity: 3000, used: 0 },
-      { organizationId: org._id, name: 'Deep Freeze Bay', location: `${org.name} - Bay 3`, type: 'Frozen', capacity: 2000, used: 0 }
-    ])
+    // Optionally seed initial default storage bays only if explicitly requested
+    if (initSampleBays) {
+      await Storage.insertMany([
+        { organizationId: org._id, name: 'Main Ambient Floor', location: `${org.name} - Bay 1`, type: 'Ambient', capacity: 5000, used: 0 },
+        { organizationId: org._id, name: 'Refrigerated Cold Room', location: `${org.name} - Bay 2`, type: 'Refrigerated', capacity: 3000, used: 0 },
+        { organizationId: org._id, name: 'Deep Freeze Bay', location: `${org.name} - Bay 3`, type: 'Frozen', capacity: 2000, used: 0 }
+      ])
+    }
 
     // Update current org on user
     await User.findByIdAndUpdate(req.user.id, { currentOrganizationId: org._id })

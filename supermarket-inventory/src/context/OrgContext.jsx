@@ -106,14 +106,14 @@ export function OrgProvider({ children }) {
     }
   }, [organizations, fetchActiveDetails, addToast])
 
-  const createOrg = useCallback(async ({ name, description, location }) => {
+  const createOrg = useCallback(async ({ name, description, location, initSampleBays }) => {
     const res = await fetch(`${API_URL}/api/organizations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...authHeader
       },
-      body: JSON.stringify({ name, description, location })
+      body: JSON.stringify({ name, description, location, initSampleBays })
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.message || 'Failed to create organization')
